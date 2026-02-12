@@ -1,0 +1,61 @@
+# Java
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.logs
+*.iml
+
+# Maven
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.ipr
+*.iws
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Spring Boot
+*.log
+logs/
+
+# Docker
+docker-compose.override.yml
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfplan
+.terraform.lock.hcl
+terraform.tfvars
+
+# Secrets - NEVER commit these
+*.pem
+*.key
+*.env
+*.env.local
+.env.*
+credentials.json
+secrets.yml
+*-credentials*
+
+# Node (for tooling)
+node_modules/
+
+# Kubernetes
+kubeconfig
+*.kubeconfig
+
+# Coverage
+coverage/
+*.lcov

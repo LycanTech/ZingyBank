@@ -1,0 +1,60 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      mvc:
+        routes:
+          - id: auth-service
+            uri: http://auth-service:8081
+            predicates:
+              - Path=/api/v1/auth/**
+          - id: account-service
+            uri: http://account-service:8082
+            predicates:
+              - Path=/api/v1/accounts/**
+          - id: transaction-service
+            uri: http://transaction-service:8083
+            predicates:
+              - Path=/api/v1/transactions/**
+          - id: payment-service
+            uri: http://payment-service:8084
+            predicates:
+              - Path=/api/v1/payments/**
+          - id: loan-service
+            uri: http://loan-service:8085
+            predicates:
+              - Path=/api/v1/loans/**
+          - id: card-service
+            uri: http://card-service:8086
+            predicates:
+              - Path=/api/v1/cards/**
+          - id: kyc-service
+            uri: http://kyc-service:8087
+            predicates:
+              - Path=/api/v1/kyc/**
+          - id: notification-service
+            uri: http://notification-service:8088
+            predicates:
+              - Path=/api/v1/notifications/**
+          - id: statement-service
+            uri: http://statement-service:8089
+            predicates:
+              - Path=/api/v1/statements/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    com.zingybank: DEBUG

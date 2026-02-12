@@ -1,0 +1,65 @@
+# ArgoCD ApplicationSet — deploys all ZingyBank microservices via GitOps
+# Each service is deployed from its Helm chart in the repo
+
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: zingybank-services
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - service: api-gateway
+            port: "8080"
+          - service: auth-service
+            port: "8081"
+          - service: account-service
+            port: "8082"
+          - service: transaction-service
+            port: "8083"
+          - service: payment-service
+            port: "8084"
+          - service: loan-service
+            port: "8085"
+          - service: card-service
+            port: "8086"
+          - service: kyc-service
+            port: "8087"
+          - service: notification-service
+            port: "8088"
+          - service: statement-service
+            port: "8089"
+          - service: audit-service
+            port: "8090"
+  template:
+    metadata:
+      name: "zingybank-{{service}}"
+      namespace: argocd
+      labels:
+        app.kubernetes.io/part-of: zingybank
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/YOUR_ORG/ZingyBankingApp.git  # TODO: Update with actual repo
+        targetRevision: main
+        path: "infrastructure/helm/charts/{{service}}"
+        helm:
+          valueFiles:
+            - "../../values/{{service}}/values-dev.yml"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: zingybank
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ApplyOutOfSyncOnly=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m

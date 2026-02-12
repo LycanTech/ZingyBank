@@ -1,0 +1,354 @@
+# ZingyBank Local Development Environment
+# Usage: docker-compose up -d
+# This starts all infrastructure + services for local development
+
+services:
+  # ============================================================
+  # INFRASTRUCTURE
+  # ============================================================
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: zingybank-postgres
+    environment:
+      POSTGRES_USER: zingybank
+      POSTGRES_PASSWORD: zingybank
+      POSTGRES_MULTIPLE_DATABASES: >
+        zingybank_auth,
+        zingybank_account,
+        zingybank_transaction,
+        zingybank_payment,
+        zingybank_loan,
+        zingybank_card,
+        zingybank_kyc,
+        zingybank_notification,
+        zingybank_statement,
+        zingybank_audit
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/docker/postgres/init-multiple-dbs.sh:/docker-entrypoint-initdb.d/init-multiple-dbs.sh
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zingybank"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - zingybank-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: zingybank-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass zingybank --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "zingybank", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - zingybank-net
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.7.1
+    container_name: zingybank-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - zingybank-net
+
+  kafka:
+    image: confluentinc/cp-kafka:7.7.1
+    container_name: zingybank-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - zingybank-net
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: zingybank-kafka-ui
+    depends_on:
+      - kafka
+    ports:
+      - "9091:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: zingybank-local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    networks:
+      - zingybank-net
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: zingybank-mailhog
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - zingybank-net
+
+  # ============================================================
+  # MICROSERVICES
+  # ============================================================
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/api-gateway/Dockerfile
+    container_name: zingybank-api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PASSWORD: zingybank
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - zingybank-net
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    container_name: zingybank-auth
+    ports:
+      - "8081:8081"
+    environment:
+      DB_USERNAME: zingybank
+      DB_PASSWORD: zingybank
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/zingybank_auth
+      REDIS_HOST: redis
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JWT_SECRET: zingybank-dev-secret-key-change-in-production-must-be-at-least-256-bits-long
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - zingybank-net
+
+  account-service:
+    build:
+      context: .
+      dockerfile: services/account-service/Dockerfile
+    container_name: zingybank-account
+    ports:
+      - "8082:8082"
+    environment:
+      DB_USERNAME: zingybank
+      DB_PASSWORD: zingybank
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/zingybank_account
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - zingybank-net
+
+  transaction-service:
+    build:
+      context: .
+      dockerfile: services/transaction-service/Dockerfile
+    container_name: zingybank-transaction
+    ports:
+      - "8083:8083"
+    environment:
+      DB_USERNAME: zingybank
+      DB_PASSWORD: zingybank
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/zingybank_transaction
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - zingybank-net
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: services/payment-service/Dockerfile
+    container_name: zingybank-payment
+    ports:
+      - "8084:8084"
+    environment:
+      DB_USERNAME: zingybank
+      DB_PASSWORD: zingybank
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/zingybank_payment
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - zingybank-net
+
+  loan-service:
+    build:
+      context: .
+      dockerfile: services/loan-service/Dockerfile
+    container_name: zingybank-loan
+    ports:
+      - "8085:8085"
+    environment:
+      DB_USERNAME: zingybank
+      DB_PASSWORD: zingybank
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/zingybank_loan
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - zingybank-net
+
+  card-service:
+    build:
+      context: .
+      dockerfile: services/card-service/Dockerfile
+    container_name: zingybank-card
+    ports:
+      - "8086:8086"
+    environment:
+      DB_USERNAME: zingybank
+      DB_PASSWORD: zingybank
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/zingybank_card
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - zingybank-net
+
+  kyc-service:
+    build:
+      context: .
+      dockerfile: services/kyc-service/Dockerfile
+    container_name: zingybank-kyc
+    ports:
+      - "8087:8087"
+    environment:
+      DB_USERNAME: zingybank
+      DB_PASSWORD: zingybank
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/zingybank_kyc
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - zingybank-net
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
+    container_name: zingybank-notification
+    ports:
+      - "8088:8088"
+    environment:
+      DB_USERNAME: zingybank
+      DB_PASSWORD: zingybank
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/zingybank_notification
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    networks:
+      - zingybank-net
+
+  statement-service:
+    build:
+      context: .
+      dockerfile: services/statement-service/Dockerfile
+    container_name: zingybank-statement
+    ports:
+      - "8089:8089"
+    environment:
+      DB_USERNAME: zingybank
+      DB_PASSWORD: zingybank
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/zingybank_statement
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - zingybank-net
+
+  audit-service:
+    build:
+      context: .
+      dockerfile: services/audit-service/Dockerfile
+    container_name: zingybank-audit
+    ports:
+      - "8090:8090"
+    environment:
+      DB_USERNAME: zingybank
+      DB_PASSWORD: zingybank
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/zingybank_audit
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - zingybank-net
+
+# ============================================================
+# VOLUMES & NETWORKS
+# ============================================================
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  zingybank-net:
+    driver: bridge
+    name: zingybank-network
