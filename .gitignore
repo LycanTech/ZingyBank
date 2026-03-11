@@ -49,8 +49,9 @@ credentials.json
 secrets.yml
 *-credentials*
 
-# Node (for tooling)
+# Node (for tooling and frontend)
 node_modules/
+frontend/dist/
 
 # Kubernetes
 kubeconfig
@@ -59,3 +60,11 @@ kubeconfig
 # Coverage
 coverage/
 *.lcov
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# API test scratch files
+account.json
+body.json
+login.json

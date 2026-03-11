@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@theme {
+  /* ZingyBank Red/White Theme */
+  --color-zingy-50: #fef2f2;
+  --color-zingy-100: #fee2e2;
+  --color-zingy-200: #fecaca;
+  --color-zingy-300: #fca5a5;
+  --color-zingy-400: #f87171;
+  --color-zingy-500: #ef4444;
+  --color-zingy-600: #dc2626;
+  --color-zingy-700: #b91c1c;
+  --color-zingy-800: #991b1b;
+  --color-zingy-900: #7f1d1d;
+  --color-zingy-950: #450a0a;
+
+  --color-bank-bg: #f8f9fa;
+  --color-bank-card: #ffffff;
+  --color-bank-border: #e5e7eb;
+  --color-bank-text: #1f2937;
+  --color-bank-muted: #6b7280;
+
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Base styles */
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bank-bg);
+  color: var(--color-bank-text);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}

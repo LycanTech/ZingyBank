@@ -1,15 +1,15 @@
 # Stage 1: Build
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM maven:3.9-eclipse-temurin-21-alpine AS builder
 WORKDIR /build
 
 # Copy parent POM and service POM for dependency caching
 COPY pom.xml /build/parent-pom.xml
 COPY services/api-gateway/pom.xml /build/pom.xml
 
-# Download dependencies (cached layer)
+# Install parent POM and download dependencies (cached layer)
 RUN --mount=type=cache,target=/root/.m2 \
-    mvn -f /build/parent-pom.xml dependency:go-offline -N && \
-    mvn dependency:go-offline
+    mvn install -f /build/parent-pom.xml -N -q && \
+    mvn dependency:go-offline -q
 
 # Copy source and build
 COPY services/api-gateway/src ./src
