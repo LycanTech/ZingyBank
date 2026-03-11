@@ -42,9 +42,11 @@ terraform.tfvars
 # Secrets - NEVER commit these
 *.pem
 *.key
+.env
 *.env
 *.env.local
 .env.*
+!.env.example
 credentials.json
 secrets.yml
 *-credentials*
