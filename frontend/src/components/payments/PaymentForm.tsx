@@ -50,7 +50,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ onSuccess }) => {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<PaymentFormData>({
+  } = useForm<z.input<typeof paymentSchema>, unknown, z.output<typeof paymentSchema>>({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
       accountNumber: '',
@@ -68,18 +68,17 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ onSuccess }) => {
     label: `${ACCOUNT_TYPE_LABELS[acc.accountType] || acc.accountType} (****${acc.accountNumber.slice(-4)})`,
   }));
 
-  const onSubmit = (data: PaymentFormData) => {
-    const parsed = paymentSchema.parse(data);
+  const onSubmit = (data: z.output<typeof paymentSchema>) => {
     createPayment.mutate(
       {
-        accountNumber: parsed.accountNumber,
-        payeeName: parsed.payeeName,
-        payeeAccountNumber: parsed.payeeAccountNumber,
-        amount: parsed.amount,
+        accountNumber: data.accountNumber,
+        payeeName: data.payeeName,
+        payeeAccountNumber: data.payeeAccountNumber,
+        amount: data.amount,
         currency: 'USD',
-        paymentType: parsed.paymentType as any,
-        scheduledDate: parsed.scheduledDate || undefined,
-        description: parsed.description,
+        paymentType: data.paymentType as any,
+        scheduledDate: data.scheduledDate || undefined,
+        description: data.description,
       },
       {
         onSuccess: () => {

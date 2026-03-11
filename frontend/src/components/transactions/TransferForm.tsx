@@ -42,7 +42,7 @@ export const TransferForm: React.FC<TransferFormProps> = ({ onSuccess }) => {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<TransferFormData>({
+  } = useForm<z.input<typeof transferSchema>, unknown, z.output<typeof transferSchema>>({
     resolver: zodResolver(transferSchema),
     defaultValues: {
       sourceAccountNumber: '',
@@ -57,15 +57,14 @@ export const TransferForm: React.FC<TransferFormProps> = ({ onSuccess }) => {
     label: `${ACCOUNT_TYPE_LABELS[acc.accountType] || acc.accountType} (****${acc.accountNumber.slice(-4)})`,
   }));
 
-  const onSubmit = (data: TransferFormData) => {
-    const parsed = transferSchema.parse(data);
+  const onSubmit = (data: z.output<typeof transferSchema>) => {
     transfer.mutate(
       {
-        sourceAccountNumber: parsed.sourceAccountNumber,
-        destinationAccountNumber: parsed.destinationAccountNumber,
-        amount: parsed.amount,
+        sourceAccountNumber: data.sourceAccountNumber,
+        destinationAccountNumber: data.destinationAccountNumber,
+        amount: data.amount,
         currency: 'USD',
-        description: parsed.description,
+        description: data.description,
         initiatedBy: userId ?? '',
       },
       {

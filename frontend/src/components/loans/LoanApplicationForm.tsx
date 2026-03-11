@@ -70,7 +70,7 @@ export const LoanApplicationForm: React.FC<LoanApplicationFormProps> = ({ onSucc
     reset,
     control,
     formState: { errors },
-  } = useForm<LoanApplicationFormData>({
+  } = useForm<z.input<typeof loanApplicationSchema>, unknown, z.output<typeof loanApplicationSchema>>({
     resolver: zodResolver(loanApplicationSchema),
     defaultValues: {
       loanType: 'PERSONAL',
@@ -94,17 +94,16 @@ export const LoanApplicationForm: React.FC<LoanApplicationFormProps> = ({ onSucc
     label: `${ACCOUNT_TYPE_LABELS[acc.accountType] || acc.accountType} (****${acc.accountNumber.slice(-4)})`,
   }));
 
-  const onSubmit = (data: LoanApplicationFormData) => {
+  const onSubmit = (data: z.output<typeof loanApplicationSchema>) => {
     if (!userId) return;
 
-    const parsed = loanApplicationSchema.parse(data);
     applyLoan.mutate(
       {
         userId,
-        disbursementAccountNumber: parsed.disbursementAccountNumber,
-        loanType: parsed.loanType as any,
-        principalAmount: parsed.principalAmount,
-        termMonths: parsed.termMonths,
+        disbursementAccountNumber: data.disbursementAccountNumber,
+        loanType: data.loanType as any,
+        principalAmount: data.principalAmount,
+        termMonths: data.termMonths,
       },
       {
         onSuccess: () => {

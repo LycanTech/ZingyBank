@@ -59,7 +59,7 @@ export const SpendingChart: React.FC = () => {
               width={70}
             />
             <Tooltip
-              formatter={(value: number) => [currencyFormatter(value), 'Balance']}
+              formatter={(value: number | undefined) => [currencyFormatter(value ?? 0), 'Balance']}
               contentStyle={{
                 borderRadius: '8px',
                 border: '1px solid #e5e7eb',

@@ -51,7 +51,7 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ isOpen, 
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<CreateAccountFormData>({
+  } = useForm<z.input<typeof createAccountSchema>, unknown, z.output<typeof createAccountSchema>>({
     resolver: zodResolver(createAccountSchema),
     defaultValues: {
       accountType: 'CHECKING',
@@ -60,16 +60,15 @@ export const CreateAccountModal: React.FC<CreateAccountModalProps> = ({ isOpen, 
     },
   });
 
-  const onSubmit = (data: CreateAccountFormData) => {
+  const onSubmit = (data: z.output<typeof createAccountSchema>) => {
     if (!userId) return;
 
-    const parsed = createAccountSchema.parse(data);
     createAccount.mutate(
       {
         userId,
-        accountType: parsed.accountType as CreateAccountFormData['accountType'] extends string ? any : never,
-        currency: parsed.currency,
-        initialDeposit: parsed.initialDeposit,
+        accountType: data.accountType as any,
+        currency: data.currency,
+        initialDeposit: data.initialDeposit,
       },
       {
         onSuccess: () => {

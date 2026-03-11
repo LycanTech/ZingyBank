@@ -46,7 +46,7 @@ export const RequestCardModal: React.FC<RequestCardModalProps> = ({ isOpen, onCl
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<RequestCardFormData>({
+  } = useForm<z.input<typeof requestCardSchema>, unknown, z.output<typeof requestCardSchema>>({
     resolver: zodResolver(requestCardSchema),
     defaultValues: {
       cardType: 'DEBIT',
@@ -60,16 +60,15 @@ export const RequestCardModal: React.FC<RequestCardModalProps> = ({ isOpen, onCl
     label: `${ACCOUNT_TYPE_LABELS[acc.accountType] || acc.accountType} (****${acc.accountNumber.slice(-4)})`,
   }));
 
-  const onSubmit = (data: RequestCardFormData) => {
+  const onSubmit = (data: z.output<typeof requestCardSchema>) => {
     if (!userId) return;
 
-    const parsed = requestCardSchema.parse(data);
     issueCard.mutate(
       {
         userId,
-        accountId: parsed.accountId,
-        cardType: parsed.cardType as any,
-        dailyLimit: parsed.dailyLimit,
+        accountId: data.accountId,
+        cardType: data.cardType as any,
+        dailyLimit: data.dailyLimit,
       },
       {
         onSuccess: () => {
