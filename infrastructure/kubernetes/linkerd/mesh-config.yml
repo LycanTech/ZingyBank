@@ -1,0 +1,151 @@
+# Linkerd Service Mesh configuration for ZingyBank
+# Enables automatic mTLS + traffic metrics for all pods in zingybank namespace
+# ServiceProfiles define per-route retry and timeout policies
+
+# Annotate the zingybank namespace for automatic sidecar injection
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: zingybank
+  labels:
+    linkerd.io/inject: enabled
+  annotations:
+    linkerd.io/inject: enabled
+---
+# ServiceProfile for auth-service
+apiVersion: linkerd.io/v1alpha2
+kind: ServiceProfile
+metadata:
+  name: auth-service.zingybank.svc.cluster.local
+  namespace: zingybank
+spec:
+  routes:
+    - name: POST /api/v1/auth/login
+      condition:
+        method: POST
+        pathRegex: /api/v1/auth/login
+      timeout: 5s
+      responseClasses:
+        - condition:
+            status:
+              min: 500
+              max: 599
+          isFailure: true
+    - name: POST /api/v1/auth/refresh
+      condition:
+        method: POST
+        pathRegex: /api/v1/auth/refresh
+      isRetryable: true
+      timeout: 5s
+---
+# ServiceProfile for account-service
+apiVersion: linkerd.io/v1alpha2
+kind: ServiceProfile
+metadata:
+  name: account-service.zingybank.svc.cluster.local
+  namespace: zingybank
+spec:
+  routes:
+    - name: GET /api/v1/accounts
+      condition:
+        method: GET
+        pathRegex: /api/v1/accounts.*
+      isRetryable: true
+      timeout: 5s
+    - name: POST /api/v1/accounts
+      condition:
+        method: POST
+        pathRegex: /api/v1/accounts
+      timeout: 10s
+---
+# ServiceProfile for transaction-service
+apiVersion: linkerd.io/v1alpha2
+kind: ServiceProfile
+metadata:
+  name: transaction-service.zingybank.svc.cluster.local
+  namespace: zingybank
+spec:
+  routes:
+    - name: POST /api/v1/transactions/transfer
+      condition:
+        method: POST
+        pathRegex: /api/v1/transactions/transfer
+      timeout: 10s
+      responseClasses:
+        - condition:
+            status:
+              min: 500
+              max: 599
+          isFailure: true
+    - name: GET /api/v1/transactions
+      condition:
+        method: GET
+        pathRegex: /api/v1/transactions.*
+      isRetryable: true
+      timeout: 5s
+---
+# ServiceProfile for payment-service
+apiVersion: linkerd.io/v1alpha2
+kind: ServiceProfile
+metadata:
+  name: payment-service.zingybank.svc.cluster.local
+  namespace: zingybank
+spec:
+  routes:
+    - name: POST /api/v1/payments
+      condition:
+        method: POST
+        pathRegex: /api/v1/payments.*
+      timeout: 15s
+      responseClasses:
+        - condition:
+            status:
+              min: 500
+              max: 599
+          isFailure: true
+    - name: GET /api/v1/payments
+      condition:
+        method: GET
+        pathRegex: /api/v1/payments.*
+      isRetryable: true
+      timeout: 5s
+---
+# ServiceProfile for loan-service
+apiVersion: linkerd.io/v1alpha2
+kind: ServiceProfile
+metadata:
+  name: loan-service.zingybank.svc.cluster.local
+  namespace: zingybank
+spec:
+  routes:
+    - name: POST /api/v1/loans/apply
+      condition:
+        method: POST
+        pathRegex: /api/v1/loans/apply
+      timeout: 15s
+    - name: GET /api/v1/loans
+      condition:
+        method: GET
+        pathRegex: /api/v1/loans.*
+      isRetryable: true
+      timeout: 5s
+---
+# ServiceProfile for kyc-service
+apiVersion: linkerd.io/v1alpha2
+kind: ServiceProfile
+metadata:
+  name: kyc-service.zingybank.svc.cluster.local
+  namespace: zingybank
+spec:
+  routes:
+    - name: POST /api/v1/kyc/submit
+      condition:
+        method: POST
+        pathRegex: /api/v1/kyc/submit
+      timeout: 30s
+    - name: GET /api/v1/kyc/status
+      condition:
+        method: GET
+        pathRegex: /api/v1/kyc/status.*
+      isRetryable: true
+      timeout: 5s

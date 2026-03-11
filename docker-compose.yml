@@ -4,7 +4,7 @@
 
 services:
   # ============================================================
-  # INFRASTRUCTURE
+  # INFRASTRUCTURE - CORE
   # ============================================================
 
   postgres:
@@ -34,6 +34,27 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - zingybank-net
+
+  pgbouncer:
+    image: pgbouncer/pgbouncer:1.23.1
+    container_name: zingybank-pgbouncer
+    ports:
+      - "5433:5432"
+    environment:
+      DATABASES_HOST: postgres
+      DATABASES_PORT: 5432
+      DATABASES_USER: zingybank
+      DATABASES_PASSWORD: zingybank
+      PGBOUNCER_POOL_MODE: transaction
+      PGBOUNCER_MAX_CLIENT_CONN: 1000
+      PGBOUNCER_DEFAULT_POOL_SIZE: 20
+      PGBOUNCER_MIN_POOL_SIZE: 5
+      PGBOUNCER_RESERVE_POOL_SIZE: 5
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - zingybank-net
 
@@ -111,6 +132,85 @@ services:
       - zingybank-net
 
   # ============================================================
+  # INFRASTRUCTURE - OBSERVABILITY
+  # ============================================================
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.62
+    container_name: zingybank-jaeger
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "4317:4317"    # OTLP gRPC
+      - "4318:4318"    # OTLP HTTP
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    networks:
+      - zingybank-net
+
+  loki:
+    image: grafana/loki:3.3.2
+    container_name: zingybank-loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - zingybank-net
+
+  promtail:
+    image: grafana/promtail:3.3.2
+    container_name: zingybank-promtail
+    volumes:
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/config.yml
+    environment:
+      LOKI_URL: http://loki:3100/loki/api/v1/push
+    depends_on:
+      - loki
+    networks:
+      - zingybank-net
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: zingybank-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: zingybank
+      GF_DATASOURCES_DEFAULT_TYPE: prometheus
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - loki
+    networks:
+      - zingybank-net
+
+  # ============================================================
+  # INFRASTRUCTURE - SECRETS MANAGEMENT
+  # ============================================================
+
+  vault:
+    image: hashicorp/vault:1.18
+    container_name: zingybank-vault
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: zingybank-vault-token
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+      VAULT_ADDR: http://0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    command: server -dev
+    healthcheck:
+      test: ["CMD", "vault", "status", "-address=http://localhost:8200"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - zingybank-net
+
+  # ============================================================
   # MICROSERVICES
   # ============================================================
 
@@ -124,9 +224,15 @@ services:
     environment:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PASSWORD: zingybank
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      OTEL_SERVICE_NAME: api-gateway
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: zingybank-vault-token
     depends_on:
       redis:
         condition: service_healthy
+      jaeger:
+        condition: service_started
     networks:
       - zingybank-net
 
@@ -141,9 +247,14 @@ services:
       DB_USERNAME: zingybank
       DB_PASSWORD: zingybank
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/zingybank_auth
-      REDIS_HOST: redis
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PASSWORD: zingybank
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       JWT_SECRET: zingybank-dev-secret-key-change-in-production-must-be-at-least-256-bits-long
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      OTEL_SERVICE_NAME: auth-service
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: zingybank-vault-token
     depends_on:
       postgres:
         condition: service_healthy
@@ -151,6 +262,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      jaeger:
+        condition: service_started
     networks:
       - zingybank-net
 
@@ -166,11 +279,17 @@ services:
       DB_PASSWORD: zingybank
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/zingybank_account
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      OTEL_SERVICE_NAME: account-service
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: zingybank-vault-token
     depends_on:
       postgres:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      jaeger:
+        condition: service_started
     networks:
       - zingybank-net
 
@@ -186,11 +305,17 @@ services:
       DB_PASSWORD: zingybank
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/zingybank_transaction
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      OTEL_SERVICE_NAME: transaction-service
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: zingybank-vault-token
     depends_on:
       postgres:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      jaeger:
+        condition: service_started
     networks:
       - zingybank-net
 
@@ -206,11 +331,17 @@ services:
       DB_PASSWORD: zingybank
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/zingybank_payment
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      OTEL_SERVICE_NAME: payment-service
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: zingybank-vault-token
     depends_on:
       postgres:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      jaeger:
+        condition: service_started
     networks:
       - zingybank-net
 
@@ -226,11 +357,17 @@ services:
       DB_PASSWORD: zingybank
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/zingybank_loan
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      OTEL_SERVICE_NAME: loan-service
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: zingybank-vault-token
     depends_on:
       postgres:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      jaeger:
+        condition: service_started
     networks:
       - zingybank-net
 
@@ -246,11 +383,17 @@ services:
       DB_PASSWORD: zingybank
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/zingybank_card
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      OTEL_SERVICE_NAME: card-service
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: zingybank-vault-token
     depends_on:
       postgres:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      jaeger:
+        condition: service_started
     networks:
       - zingybank-net
 
@@ -266,11 +409,17 @@ services:
       DB_PASSWORD: zingybank
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/zingybank_kyc
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      OTEL_SERVICE_NAME: kyc-service
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: zingybank-vault-token
     depends_on:
       postgres:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      jaeger:
+        condition: service_started
     networks:
       - zingybank-net
 
@@ -288,12 +437,18 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SMTP_HOST: mailhog
       SMTP_PORT: 1025
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      OTEL_SERVICE_NAME: notification-service
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: zingybank-vault-token
     depends_on:
       postgres:
         condition: service_healthy
       kafka:
         condition: service_healthy
       mailhog:
+        condition: service_started
+      jaeger:
         condition: service_started
     networks:
       - zingybank-net
@@ -310,11 +465,17 @@ services:
       DB_PASSWORD: zingybank
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/zingybank_statement
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      OTEL_SERVICE_NAME: statement-service
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: zingybank-vault-token
     depends_on:
       postgres:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      jaeger:
+        condition: service_started
     networks:
       - zingybank-net
 
@@ -330,11 +491,33 @@ services:
       DB_PASSWORD: zingybank
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/zingybank_audit
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      OTEL_SERVICE_NAME: audit-service
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: zingybank-vault-token
     depends_on:
       postgres:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      jaeger:
+        condition: service_started
+    networks:
+      - zingybank-net
+
+  # ============================================================
+  # FRONTEND
+  # ============================================================
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: zingybank-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api-gateway
     networks:
       - zingybank-net
 
@@ -346,6 +529,8 @@ volumes:
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+  grafana_data:
     driver: local
 
 networks:

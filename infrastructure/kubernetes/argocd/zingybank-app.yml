@@ -1,0 +1,290 @@
+# ArgoCD GitOps Application definitions for ZingyBank
+# Install ArgoCD first:
+#   kubectl create namespace argocd
+#   kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+# Then apply this file:
+#   kubectl apply -f infrastructure/kubernetes/argocd/zingybank-app.yml
+
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: zingybank
+  namespace: argocd
+spec:
+  description: ZingyBank Banking Platform
+  sourceRepos:
+    - '*'
+  destinations:
+    - namespace: zingybank
+      server: https://kubernetes.default.svc
+    - namespace: zingybank-monitoring
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: zingybank-api-gateway
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: zingybank
+  source:
+    repoURL: https://github.com/YOUR_ORG/ZingyBankingApp
+    targetRevision: main
+    path: infrastructure/helm/charts/base-service
+    helm:
+      valueFiles:
+        - ../../../infrastructure/helm/values/api-gateway.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: zingybank
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: zingybank-auth-service
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: zingybank
+  source:
+    repoURL: https://github.com/YOUR_ORG/ZingyBankingApp
+    targetRevision: main
+    path: infrastructure/helm/charts/base-service
+    helm:
+      valueFiles:
+        - ../../../infrastructure/helm/values/auth-service.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: zingybank
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: zingybank-account-service
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  project: zingybank
+  source:
+    repoURL: https://github.com/YOUR_ORG/ZingyBankingApp
+    targetRevision: main
+    path: infrastructure/helm/charts/base-service
+    helm:
+      valueFiles:
+        - ../../../infrastructure/helm/values/account-service.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: zingybank
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: zingybank-transaction-service
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  project: zingybank
+  source:
+    repoURL: https://github.com/YOUR_ORG/ZingyBankingApp
+    targetRevision: main
+    path: infrastructure/helm/charts/base-service
+    helm:
+      valueFiles:
+        - ../../../infrastructure/helm/values/transaction-service.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: zingybank
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: zingybank-payment-service
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  project: zingybank
+  source:
+    repoURL: https://github.com/YOUR_ORG/ZingyBankingApp
+    targetRevision: main
+    path: infrastructure/helm/charts/base-service
+    helm:
+      valueFiles:
+        - ../../../infrastructure/helm/values/payment-service.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: zingybank
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: zingybank-loan-service
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  project: zingybank
+  source:
+    repoURL: https://github.com/YOUR_ORG/ZingyBankingApp
+    targetRevision: main
+    path: infrastructure/helm/charts/base-service
+    helm:
+      valueFiles:
+        - ../../../infrastructure/helm/values/loan-service.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: zingybank
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: zingybank-card-service
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  project: zingybank
+  source:
+    repoURL: https://github.com/YOUR_ORG/ZingyBankingApp
+    targetRevision: main
+    path: infrastructure/helm/charts/base-service
+    helm:
+      valueFiles:
+        - ../../../infrastructure/helm/values/card-service.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: zingybank
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: zingybank-kyc-service
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  project: zingybank
+  source:
+    repoURL: https://github.com/YOUR_ORG/ZingyBankingApp
+    targetRevision: main
+    path: infrastructure/helm/charts/base-service
+    helm:
+      valueFiles:
+        - ../../../infrastructure/helm/values/kyc-service.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: zingybank
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: zingybank-notification-service
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  project: zingybank
+  source:
+    repoURL: https://github.com/YOUR_ORG/ZingyBankingApp
+    targetRevision: main
+    path: infrastructure/helm/charts/base-service
+    helm:
+      valueFiles:
+        - ../../../infrastructure/helm/values/notification-service.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: zingybank
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: zingybank-statement-service
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  project: zingybank
+  source:
+    repoURL: https://github.com/YOUR_ORG/ZingyBankingApp
+    targetRevision: main
+    path: infrastructure/helm/charts/base-service
+    helm:
+      valueFiles:
+        - ../../../infrastructure/helm/values/statement-service.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: zingybank
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: zingybank-audit-service
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  project: zingybank
+  source:
+    repoURL: https://github.com/YOUR_ORG/ZingyBankingApp
+    targetRevision: main
+    path: infrastructure/helm/charts/base-service
+    helm:
+      valueFiles:
+        - ../../../infrastructure/helm/values/audit-service.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: zingybank
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

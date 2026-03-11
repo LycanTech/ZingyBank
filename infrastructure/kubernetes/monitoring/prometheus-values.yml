@@ -43,6 +43,26 @@ grafana:
     enabled: true
     size: 10Gi
 
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          url: http://prometheus-operated:9090
+          isDefault: true
+          access: proxy
+        - name: Loki
+          type: loki
+          url: http://loki:3100
+          access: proxy
+          jsonData:
+            maxLines: 1000
+        - name: Jaeger
+          type: jaeger
+          url: http://jaeger-query:16686
+          access: proxy
+
   dashboardProviders:
     dashboardproviders.yaml:
       apiVersion: 1
@@ -107,9 +127,40 @@ grafana:
                   }
                 ],
                 "gridPos": {"h": 4, "w": 6, "x": 6, "y": 8}
+              },
+              {
+                "title": "Circuit Breaker States",
+                "type": "stat",
+                "targets": [
+                  {
+                    "expr": "resilience4j_circuitbreaker_state{namespace=\"zingybank\", state=\"open\"}",
+                    "legendFormat": "OPEN: {{name}}"
+                  }
+                ],
+                "gridPos": {"h": 4, "w": 6, "x": 12, "y": 8}
               }
             ]
           }
+      jvm-micrometer:
+        gnetId: 4701
+        revision: 9
+        datasource: Prometheus
+      spring-boot-statistics:
+        gnetId: 12685
+        revision: 1
+        datasource: Prometheus
+      kafka-overview:
+        gnetId: 7589
+        revision: 5
+        datasource: Prometheus
+      postgresql-database:
+        gnetId: 9628
+        revision: 7
+        datasource: Prometheus
+      kubernetes-cluster:
+        gnetId: 7249
+        revision: 1
+        datasource: Prometheus
 
 alertmanager:
   enabled: true
@@ -128,3 +179,69 @@ alertmanager:
         # slack_configs:
         #   - api_url: 'https://hooks.slack.com/services/...'
         #     channel: '#zingybank-alerts'
+
+additionalPrometheusRulesMap:
+  zingybank-rules:
+    groups:
+      - name: zingybank.critical
+        rules:
+          - alert: ServiceDown
+            expr: up{namespace="zingybank"} == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "ZingyBank service {{ $labels.pod }} is down"
+              description: "Service {{ $labels.pod }} has been down for 1 minute."
+
+          - alert: HighErrorRate
+            expr: |
+              sum(rate(http_server_requests_seconds_count{namespace="zingybank",status=~"5.."}[5m]))
+              / sum(rate(http_server_requests_seconds_count{namespace="zingybank"}[5m])) > 0.05
+            for: 2m
+            labels:
+              severity: critical
+            annotations:
+              summary: "High error rate in ZingyBank services"
+              description: "Error rate is above 5% for 2 minutes."
+
+          - alert: HighLatency
+            expr: |
+              histogram_quantile(0.99,
+                rate(http_server_requests_seconds_bucket{namespace="zingybank"}[5m])
+              ) > 2
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High p99 latency in ZingyBank"
+              description: "p99 latency is above 2 seconds for 5 minutes."
+
+          - alert: KafkaConsumerLag
+            expr: kafka_consumer_group_lag{namespace="zingybank"} > 1000
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High Kafka consumer lag"
+              description: "Consumer group {{ $labels.consumergroup }} is lagging by {{ $value }} messages."
+
+          - alert: CircuitBreakerOpen
+            expr: resilience4j_circuitbreaker_state{state="open",namespace="zingybank"} == 1
+            for: 30s
+            labels:
+              severity: critical
+            annotations:
+              summary: "Circuit breaker open in {{ $labels.pod }}"
+              description: "Circuit breaker {{ $labels.name }} in {{ $labels.pod }} is OPEN."
+
+          - alert: HighJvmMemoryUsage
+            expr: |
+              jvm_memory_used_bytes{namespace="zingybank", area="heap"}
+              / jvm_memory_max_bytes{namespace="zingybank", area="heap"} > 0.85
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High JVM heap usage in {{ $labels.pod }}"
+              description: "JVM heap usage is above 85% in {{ $labels.pod }}."

@@ -1,0 +1,20 @@
+image:
+  repository: zingybank.azurecr.io/zingybank/notification-service
+  tag: "latest"
+service:
+  port: 8088
+env:
+  SPRING_DATASOURCE_URL: jdbc:postgresql://pgbouncer:5432/zingybank_notification
+  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  SMTP_HOST: mailhog
+  SMTP_PORT: "1025"
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+  OTEL_SERVICE_NAME: notification-service
+  VAULT_ADDR: http://vault:8200
+secrets:
+  DB_USERNAME:
+    secretName: zingybank-database-secret
+    key: DB_USERNAME
+  DB_PASSWORD:
+    secretName: zingybank-database-secret
+    key: DB_PASSWORD

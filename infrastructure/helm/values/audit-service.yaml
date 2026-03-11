@@ -1,0 +1,18 @@
+image:
+  repository: zingybank.azurecr.io/zingybank/audit-service
+  tag: "latest"
+service:
+  port: 8090
+env:
+  SPRING_DATASOURCE_URL: jdbc:postgresql://pgbouncer:5432/zingybank_audit
+  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+  OTEL_SERVICE_NAME: audit-service
+  VAULT_ADDR: http://vault:8200
+secrets:
+  DB_USERNAME:
+    secretName: zingybank-database-secret
+    key: DB_USERNAME
+  DB_PASSWORD:
+    secretName: zingybank-database-secret
+    key: DB_PASSWORD

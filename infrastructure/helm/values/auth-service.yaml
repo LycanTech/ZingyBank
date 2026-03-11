@@ -1,0 +1,25 @@
+image:
+  repository: zingybank.azurecr.io/zingybank/auth-service
+  tag: "latest"
+service:
+  port: 8081
+env:
+  SPRING_DATASOURCE_URL: jdbc:postgresql://pgbouncer:5432/zingybank_auth
+  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  SPRING_DATA_REDIS_HOST: redis
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+  OTEL_SERVICE_NAME: auth-service
+  VAULT_ADDR: http://vault:8200
+secrets:
+  DB_USERNAME:
+    secretName: zingybank-database-secret
+    key: DB_USERNAME
+  DB_PASSWORD:
+    secretName: zingybank-database-secret
+    key: DB_PASSWORD
+  JWT_SECRET:
+    secretName: zingybank-jwt-secret
+    key: JWT_SECRET
+  SPRING_DATA_REDIS_PASSWORD:
+    secretName: zingybank-redis-secret
+    key: REDIS_PASSWORD
