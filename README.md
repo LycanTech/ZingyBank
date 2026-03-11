@@ -1,6 +1,6 @@
 # ZingyBank - Full Retail Banking Platform
 
-A production-grade retail banking application built with **Java 21 + Spring Boot 3.4** microservices, deployed on **Azure (primary)** with **AWS (disaster recovery)**, implementing full DevOps toolchain and banking regulatory compliance.
+A production-grade retail banking platform built with **Java 21 + Spring Boot 3.4** microservices and a **React/TypeScript** frontend. Designed to be cloud-agnostic — deploys to **Azure**, **AWS**, **GCP**, or any Kubernetes cluster out of the box.
 
 ---
 
@@ -11,6 +11,11 @@ A production-grade retail banking application built with **Java 21 + Spring Boot
                                     │   Load Balancer /    │
                                     │   Ingress (NGINX)    │
                                     └──────────┬──────────┘
+                                               │
+                              ┌────────────────▼────────────────┐
+                              │   React Frontend (Port 3000)     │
+                              │   Vite + TypeScript + TailwindCSS│
+                              └────────────────┬────────────────┘
                                                │
                                     ┌──────────▼──────────┐
                                     │    API Gateway       │
@@ -33,12 +38,12 @@ A production-grade retail banking application built with **Java 21 + Spring Boot
           │  8087   │ │ Service  │ │  8089    │ │  8090   │
           └─────────┘ │  8088    │ └──────────┘ └─────────┘
                       └──────────┘
-                 ┌──────────┬──────────┐
-                 │          │          │
-          ┌──────▼──┐ ┌────▼────┐ ┌───▼─────┐
-          │PostgreSQL│ │  Redis  │ │  Kafka  │
-          │ (per-svc)│ │ Cache   │ │ Events  │
-          └─────────┘ └─────────┘ └─────────┘
+                 ┌──────────┬──────────┬──────────┐
+                 │          │          │          │
+          ┌──────▼──┐ ┌────▼────┐ ┌───▼─────┐ ┌──▼──────┐
+          │PostgreSQL│ │  Redis  │ │  Kafka  │ │PgBouncer│
+          │ (per-svc)│ │ Cache   │ │ Events  │ │  5433   │
+          └─────────┘ └─────────┘ └─────────┘ └─────────┘
 ```
 
 ### Microservices
@@ -60,6 +65,7 @@ A production-grade retail banking application built with **Java 21 + Spring Boot
 ### Data Layer
 
 - **PostgreSQL 16** — per-service databases (database-per-service pattern)
+- **PgBouncer** — connection pooler (transaction mode, 1000 max connections, port 5433)
 - **Redis 7** — caching, session store, rate limiting
 - **Apache Kafka** — event streaming between services
 - **MinIO/S3** — document storage (KYC docs, statements)
@@ -73,34 +79,133 @@ A production-grade retail banking application built with **Java 21 + Spring Boot
 | **Language** | Java 21 (LTS) |
 | **Framework** | Spring Boot 3.4, Spring Cloud 2024.0 |
 | **Build** | Maven 3.9 |
+| **Frontend** | React 18, TypeScript, Vite, TailwindCSS |
 | **Database** | PostgreSQL 16, Flyway migrations |
+| **Connection Pool** | PgBouncer (transaction mode) |
 | **Cache** | Redis 7 |
 | **Messaging** | Apache Kafka |
 | **Auth** | Spring Security, JWT (jjwt), BCrypt |
+| **Resilience** | Resilience4j (circuit breaker, retry, rate limiter, time limiter) |
 | **API Docs** | SpringDoc OpenAPI (Swagger UI) |
-| **Monitoring** | Prometheus, Grafana, Micrometer |
-| **Tracing** | Jaeger |
-| **Logging** | Loki, SLF4J/Logback |
+| **Tracing** | OpenTelemetry → Jaeger (OTLP) |
+| **Monitoring** | Prometheus, Grafana (5 dashboards), Micrometer |
+| **Logging** | Loki, Promtail, SLF4J/Logback |
+| **Secrets** | HashiCorp Vault + External Secrets Operator |
+| **Service Mesh** | Linkerd (mTLS, traffic metrics, per-route policies) |
 
 ---
 
 ## DevOps Toolchain
 
-| Tool | Purpose |
-|------|---------|
-| **Git / GitHub** | Source control, branch protection, PR reviews |
-| **Docker** | Containerize each microservice (multi-stage builds) |
-| **Kubernetes** | Orchestration — AKS (primary), EKS (DR) |
-| **Terraform** | Infrastructure as Code for Azure + AWS |
-| **Helm** | Kubernetes package management |
-| **GitHub Actions** | CI pipelines — build, test, scan, push images |
-| **ArgoCD** | GitOps continuous delivery to Kubernetes |
-| **Prometheus + Grafana** | Monitoring, alerting, dashboards |
-| **HashiCorp Vault** | Secrets management |
-| **Trivy** | Container image vulnerability scanning |
-| **SonarQube** | Code quality & security analysis |
-| **Velero** | Kubernetes backup & disaster recovery |
-| **Cert-Manager** | Automated TLS certificates |
+| Tool | Purpose | Status |
+|------|---------|--------|
+| **Git / GitHub** | Source control, branch protection, PR reviews | ✅ Implemented |
+| **Docker** | Containerize all services — multi-stage Maven builds | ✅ Implemented |
+| **Kubernetes** | Orchestration — AKS, EKS, or any conformant cluster | ✅ Implemented |
+| **Terraform** | Infrastructure as Code — Azure + AWS modules | ✅ Implemented |
+| **Helm** | K8s package management — base chart + per-env overrides | ✅ Implemented |
+| **GitHub Actions** | Cloud-agnostic CI/CD — GHCR primary, ACR/ECR/GCP optional | ✅ Implemented |
+| **ArgoCD** | GitOps delivery — auto-sync with ordered sync-waves | ✅ Implemented |
+| **Prometheus + Grafana** | Monitoring, alerting, 5 pre-built dashboards | ✅ Implemented |
+| **Jaeger** | Distributed tracing (OpenTelemetry OTLP) | ✅ Implemented |
+| **Loki + Promtail** | Log aggregation and querying | ✅ Implemented |
+| **HashiCorp Vault** | Secrets management — dev mode locally, ESO in K8s | ✅ Implemented |
+| **PgBouncer** | PostgreSQL connection pooling — 1000 max connections | ✅ Implemented |
+| **Linkerd** | Service mesh — automatic mTLS, retries, timeouts | ✅ Implemented |
+| **Resilience4j** | Circuit breaker, retry, rate limiter, time limiter | ✅ Implemented |
+| **Trivy** | Container image vulnerability scanning | ✅ Implemented |
+| **SonarQube** | Code quality & security analysis (optional) | ✅ Implemented |
+| **External Secrets Operator** | Syncs Vault secrets into Kubernetes Secrets | ✅ Implemented |
+| **Velero** | Kubernetes backup & disaster recovery | Planned |
+| **Cert-Manager** | Automated TLS certificates | Planned |
+
+---
+
+## Production-Readiness Features
+
+### Resilience (Resilience4j)
+Every service has circuit breaker, retry, rate limiter, and time limiter configured:
+
+```yaml
+resilience4j:
+  circuitbreaker:
+    instances:
+      default:
+        slidingWindowSize: 10
+        failureRateThreshold: 50       # Open after 50% failure rate
+        waitDurationInOpenState: 30s   # Wait 30s before half-open
+  retry:
+    instances:
+      default:
+        maxAttempts: 3
+        waitDuration: 500ms
+        enableExponentialBackoff: true
+  ratelimiter:
+    instances:
+      default:
+        limitForPeriod: 100            # 100 req/s per instance
+        limitRefreshPeriod: 1s
+  timelimiter:
+    instances:
+      default:
+        timeoutDuration: 5s
+```
+
+### Distributed Tracing (OpenTelemetry → Jaeger)
+All 11 services export traces via OTLP to Jaeger. 100% sampling rate in non-production:
+
+```yaml
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: http://jaeger:4318/v1/traces
+```
+
+Access the Jaeger UI at **http://localhost:16686** to trace requests across services.
+
+### Observability (Grafana + Loki)
+Grafana at **http://localhost:3001** includes:
+
+| Dashboard | Source |
+|-----------|--------|
+| ZingyBank Overview (TPS, latency p99, error rate, circuit breakers) | Custom |
+| JVM / Micrometer metrics | Grafana gnetId 4701 |
+| Spring Boot Statistics | Grafana gnetId 12685 |
+| Kafka Cluster Overview | Grafana gnetId 7589 |
+| PostgreSQL Database | Grafana gnetId 9628 |
+| Kubernetes Cluster | Grafana gnetId 7249 |
+
+Alertmanager rules fire on: `ServiceDown`, `HighErrorRate` (>5%), `HighLatency` (p99 > 2s), `KafkaConsumerLag` (>1000), `CircuitBreakerOpen`, `HighJvmMemoryUsage` (>85% heap).
+
+### Secrets Management (HashiCorp Vault)
+- **Locally**: Vault runs in dev mode (port 8200, token `zingybank-vault-token`)
+- **Kubernetes**: External Secrets Operator syncs Vault KV v2 → K8s Secrets
+- Secrets covered: DB credentials, JWT secret, Redis password
+
+```bash
+# Seed secrets locally
+bash infrastructure/kubernetes/secrets/vault-init.sh
+```
+
+### Connection Pooling (PgBouncer)
+PgBouncer sits between all microservices and PostgreSQL:
+- Transaction pool mode — lowest latency, highest throughput
+- 1000 max client connections → 100 server connections to PostgreSQL
+- Services connect to `pgbouncer:5432` (K8s) or `localhost:5433` (local)
+
+### Service Mesh (Linkerd)
+Linkerd is installed in the `zingybank` namespace providing:
+- Automatic mTLS between all services (zero config)
+- Per-route retry and timeout policies via ServiceProfiles
+- Traffic metrics (success rate, RPS, latency) in the Linkerd dashboard
+
+```bash
+# Install Linkerd
+bash infrastructure/kubernetes/linkerd/install.sh
+```
 
 ---
 
@@ -123,11 +228,10 @@ A production-grade retail banking application built with **Java 21 + Spring Boot
 - **Java 21** — `winget install Microsoft.OpenJDK.21`
 - **Maven 3.9+** — [Download](https://maven.apache.org/download.cgi)
 - **Docker Desktop** — [Download](https://www.docker.com/products/docker-desktop/)
-- **Terraform** — `winget install Hashicorp.Terraform`
+- **Node.js 20+** — [Download](https://nodejs.org/) (for frontend)
 - **kubectl** — included with Docker Desktop
 - **Helm** — `winget install Helm.Helm`
-- **Azure CLI** — `winget install Microsoft.AzureCLI`
-- **AWS CLI** — `winget install Amazon.AWSCLI.v2`
+- **Terraform** — `winget install Hashicorp.Terraform` (for cloud deployments)
 
 ---
 
@@ -135,32 +239,42 @@ A production-grade retail banking application built with **Java 21 + Spring Boot
 
 ### 1. Clone and build
 ```bash
-git clone https://github.com/YOUR_ORG/ZingyBankingApp.git
-cd ZingyBankingApp
+git clone https://github.com/LycanTech/ZingyBank.git
+cd ZingyBank
 mvn clean compile -T 4
 ```
 
-### 2. Start infrastructure
+### 2. Start core infrastructure
 ```bash
-docker-compose up -d postgres redis zookeeper kafka mailhog kafka-ui
+docker-compose up -d postgres redis zookeeper kafka pgbouncer mailhog kafka-ui
 ```
 
-### 3. Verify infrastructure
+### 3. Start observability stack
 ```bash
-docker-compose ps
-docker exec zingybank-postgres psql -U zingybank -c "\l"
+docker-compose up -d jaeger loki promtail grafana vault
 ```
 
-### 4. Start all microservices
+### 4. Seed Vault secrets (first time only)
+```bash
+bash infrastructure/kubernetes/secrets/vault-init.sh
+```
+
+### 5. Start all microservices
 ```bash
 docker-compose up -d
 ```
 
-### 5. Verify services
+### 6. Start the frontend (development mode)
 ```bash
-# Health checks
+cd frontend
+npm install
+npm run dev   # http://localhost:5173
+```
+
+### 7. Verify services
+```bash
 curl http://localhost:8080/actuator/health   # API Gateway
-curl http://localhost:8081/api/v1/auth/health # Auth Service
+curl http://localhost:8081/api/v1/auth/health
 curl http://localhost:8082/api/v1/accounts/health
 ```
 
@@ -168,116 +282,187 @@ curl http://localhost:8082/api/v1/accounts/health
 
 | Service | URL |
 |---------|-----|
+| Frontend (React) | http://localhost:5173 |
 | API Gateway | http://localhost:8080 |
+| Grafana (admin / zingybank-grafana-admin) | http://localhost:3001 |
+| Jaeger UI | http://localhost:16686 |
+| Vault UI | http://localhost:8200 |
 | Kafka UI | http://localhost:9091 |
 | MailHog (email testing) | http://localhost:8025 |
 | Swagger UI (per service) | http://localhost:{port}/swagger-ui.html |
 | Prometheus Metrics | http://localhost:{port}/actuator/prometheus |
+| PgBouncer | localhost:5433 |
 
 ---
 
 ## Project Structure
 
 ```
-ZingyBankingApp/
-├── services/                          # Microservices
-│   ├── api-gateway/                   # Spring Cloud Gateway
-│   ├── auth-service/                  # Authentication & authorization
-│   ├── account-service/               # Account management
-│   ├── transaction-service/           # Transfers & transactions
-│   ├── payment-service/               # Bill payments
-│   ├── loan-service/                  # Loan management
-│   ├── card-service/                  # Card issuance & management
-│   ├── kyc-service/                   # KYC/AML compliance
-│   ├── notification-service/          # Email/SMS notifications
-│   ├── statement-service/             # Account statements
-│   └── audit-service/                 # Immutable audit log
+ZingyBank/
+├── frontend/                          # React / TypeScript / Vite web app
+│   ├── src/
+│   │   ├── api/                       # API client modules (per service)
+│   │   ├── components/                # Reusable UI components
+│   │   ├── pages/                     # Route-level page components
+│   │   ├── stores/                    # Zustand state stores
+│   │   ├── hooks/                     # Custom React hooks
+│   │   └── types/                     # TypeScript type definitions
+│   ├── Dockerfile                     # Nginx multi-stage build
+│   └── vite.config.ts
+│
+├── services/                          # Java microservices
+│   ├── api-gateway/
+│   ├── auth-service/
+│   ├── account-service/
+│   ├── transaction-service/
+│   ├── payment-service/
+│   ├── loan-service/
+│   ├── card-service/
+│   ├── kyc-service/
+│   ├── notification-service/
+│   ├── statement-service/
+│   └── audit-service/
 │
 ├── infrastructure/
 │   ├── terraform/                     # Infrastructure as Code
 │   │   ├── modules/
-│   │   │   ├── azure/                 # Azure resources (AKS, PostgreSQL, ACR, etc.)
-│   │   │   └── aws/                   # AWS resources (EKS, RDS, ECR) — DR
+│   │   │   ├── azure/                 # AKS, PostgreSQL, ACR, Key Vault
+│   │   │   └── aws/                   # EKS, RDS, ECR (DR / multi-cloud)
 │   │   └── environments/
 │   │       ├── dev/
 │   │       ├── staging/
 │   │       └── prod/
-│   ├── helm/                          # Helm charts for K8s deployments
-│   │   ├── charts/base-service/       # Shared chart template
-│   │   └── values/                    # Per-service value overrides
-│   ├── kubernetes/                    # Raw K8s manifests
+│   ├── helm/
+│   │   ├── charts/base-service/       # Shared Helm chart (HPA, PDB, deploy)
+│   │   └── values/
+│   │       ├── {service}.yaml         # Per-service base overrides
+│   │       ├── staging/               # Staging env overrides (2 replicas)
+│   │       └── prod/                  # Prod env overrides (3+ replicas, HPA)
+│   ├── kubernetes/
 │   │   ├── namespaces/
 │   │   ├── network-policies/          # PCI DSS microsegmentation
 │   │   ├── rbac/
-│   │   └── monitoring/                # Prometheus + Grafana config
+│   │   ├── monitoring/                # Prometheus + Grafana + alert rules
+│   │   ├── argocd/                    # AppProject + 11 Application manifests
+│   │   ├── secrets/                   # ClusterSecretStore + ExternalSecrets
+│   │   ├── pgbouncer/                 # Deployment, Service, PDB
+│   │   └── linkerd/                   # Service mesh install + ServiceProfiles
 │   └── docker/
 │       └── postgres/                  # Multi-database init script
 │
-├── .github/workflows/                 # CI/CD pipelines
-│   └── ci.yml                         # Build → Test → Scan → Push
+├── .github/workflows/
+│   ├── ci.yml                         # Build → Test → Scan → Push (multi-cloud)
+│   └── cd.yml                         # Staging (auto) → Production (manual gate)
 │
-├── argocd/                            # GitOps deployment manifests
-│   └── applications/
-│
-├── docker-compose.yml                 # Local development environment
+├── docker-compose.yml                 # Full local dev stack (all services)
 ├── pom.xml                            # Parent Maven POM
 └── README.md
 ```
 
 ---
 
-## Cloud Architecture
-
-### Primary: Azure
-
-| Resource | Purpose |
-|----------|---------|
-| **AKS** | Kubernetes cluster (system + app node pools) |
-| **Azure PostgreSQL Flexible Server** | Managed database (geo-redundant backups) |
-| **Azure Cache for Redis** | Managed Redis |
-| **Azure Container Registry** | Docker image registry |
-| **Azure Key Vault** | Secrets management (HSM-backed) |
-| **Azure VNet** | Network isolation with NSGs |
-| **Log Analytics** | Centralized logging (90-day retention) |
-
-### Disaster Recovery: AWS
-
-| Resource | Purpose |
-|----------|---------|
-| **EKS** | Kubernetes cluster (standby) |
-| **RDS PostgreSQL** | Database replica |
-| **ECR** | Docker image mirror |
-| **VPC** | Network isolation |
-
-### Failover Strategy
-
-- **Velero** backs up AKS state to AWS S3
-- **Database replication** from Azure PostgreSQL to AWS RDS
-- **DNS failover** via Azure Traffic Manager / Route 53
-- **RPO:** < 15 minutes | **RTO:** < 30 minutes
-
----
-
 ## CI/CD Pipeline
 
 ```
-┌─────────┐    ┌──────────┐    ┌───────────┐    ┌─────────────┐    ┌─────────┐
-│  Push /  │───▶│  Build & │───▶│  Security │───▶│ Build Docker│───▶│ ArgoCD  │
-│   PR     │    │   Test   │    │   Scan    │    │ Push to ACR │    │ GitOps  │
-└─────────┘    └──────────┘    └───────────┘    └─────────────┘    │ Deploy  │
-                                                                    └─────────┘
-                 Maven +          Trivy +          Multi-stage        Auto-sync
-                 JUnit            SonarQube        Dockerfile         to AKS
+┌─────────┐    ┌────────────────┐    ┌──────────────┐    ┌──────────────────────────┐
+│  Push /  │───▶│  Build & Test  │───▶│   Security   │───▶│   Build & Push Images    │
+│   PR     │    │  (Java + React)│    │   Scan       │    │                          │
+└─────────┘    └────────────────┘    └──────────────┘    │  ┌─────────────────────┐ │
+                 Maven + JUnit         Trivy + SonarQube  │  │ GHCR  (always)      │ │
+                 npm build/type-check                     │  │ Azure ACR (optional)│ │
+                                                          │  │ AWS ECR   (optional)│ │
+                                                          │  │ GCP AR    (optional)│ │
+                                                          │  └─────────────────────┘ │
+                                                          └──────────────────────────┘
+                                                                        │
+                                                          ┌─────────────▼────────────┐
+                                                          │  ArgoCD GitOps Deploy    │
+                                                          │  staging (auto-sync)     │
+                                                          │  prod (manual approval)  │
+                                                          └──────────────────────────┘
 ```
 
-### Promotion Strategy
+### Multi-Cloud Image Registry Strategy
+
+| Registry | When Active | How to Enable |
+|----------|-------------|---------------|
+| **GitHub Container Registry (GHCR)** | Always | Built-in `GITHUB_TOKEN` — no secrets needed |
+| **Azure Container Registry** | Optional | Set `ACR_USERNAME` + `ACR_PASSWORD` secrets |
+| **AWS Elastic Container Registry** | Optional | Set `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY` + `AWS_ACCOUNT_ID` secrets |
+| **GCP Artifact Registry** | Optional | Set `GCP_SA_KEY` + `GCP_PROJECT_ID` secrets |
+
+### Deployment Promotion
+
 ```
-dev  →  staging  →  production
- │        │            │
- │        │            └── Manual approval + compliance sign-off
- │        └── Automated integration tests
- └── Every push to develop branch
+main push ──▶ CI (build / test / scan / push to GHCR)
+                 │
+                 ▼
+          staging (automatic)
+          ArgoCD detects image tag update in helm/values/staging/
+                 │
+                 ▼ (manual approval in GitHub Environments)
+          production
+          ArgoCD detects image tag update in helm/values/prod/
+          GitHub Release created automatically
 ```
+
+### ArgoCD Sync Waves (ordered startup)
+
+| Wave | Services |
+|------|---------|
+| 1 | api-gateway |
+| 2 | auth-service |
+| 3 | account-service, transaction-service, payment-service, loan-service, card-service, kyc-service |
+| 4 | notification-service, statement-service, audit-service |
+
+---
+
+## Cloud Deployment
+
+### Deploy to Azure (AKS)
+```bash
+cd infrastructure/terraform/environments/prod
+terraform init
+terraform apply -var-file="azure.tfvars"
+```
+
+### Deploy to AWS (EKS)
+```bash
+cd infrastructure/terraform/environments/prod
+terraform init
+terraform apply -var-file="aws.tfvars"
+```
+
+### Install to any Kubernetes cluster
+```bash
+# Install Linkerd service mesh
+bash infrastructure/kubernetes/linkerd/install.sh
+
+# Install monitoring stack
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm install monitoring prometheus-community/kube-prometheus-stack \
+  -n zingybank-monitoring --create-namespace \
+  -f infrastructure/kubernetes/monitoring/prometheus-values.yml
+
+# Install External Secrets Operator + Vault
+kubectl apply -f infrastructure/kubernetes/secrets/secret-store.yml
+kubectl apply -f infrastructure/kubernetes/secrets/zingybank-secrets.yml
+
+# Install PgBouncer
+kubectl apply -f infrastructure/kubernetes/pgbouncer/deployment.yml
+
+# Deploy all services via ArgoCD
+kubectl apply -f infrastructure/kubernetes/argocd/zingybank-app.yml
+```
+
+### Cloud Architecture
+
+| Cloud | Kubernetes | Registry | Database | Secrets |
+|-------|-----------|----------|----------|---------|
+| **Azure** | AKS | ACR | PostgreSQL Flexible Server | Azure Key Vault |
+| **AWS** | EKS | ECR | RDS PostgreSQL | AWS Secrets Manager |
+| **GCP** | GKE | Artifact Registry | Cloud SQL | Secret Manager |
+| **Any** | Any K8s | GHCR (default) | Self-managed PostgreSQL | HashiCorp Vault |
 
 ---
 
@@ -344,10 +529,10 @@ curl -X POST http://localhost:8080/api/v1/loans/apply \
 
 1. Create a feature branch from `develop`: `git checkout -b feature/your-feature`
 2. Write code with tests
-3. Ensure `mvn clean verify` passes
+3. Ensure `mvn clean verify` passes and `npm run build` succeeds in `frontend/`
 4. Open a PR to `develop`
 5. Requires: code review + all CI checks passing
-6. Merges to `main` trigger production deployment via ArgoCD
+6. Merges to `main` trigger automatic staging deployment via ArgoCD
 
 ---
 
