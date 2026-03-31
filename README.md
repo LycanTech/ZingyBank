@@ -394,12 +394,12 @@ ZingyBank/
 ├── infrastructure/
 │   ├── terraform/                     # Infrastructure as Code
 │   │   ├── modules/
-│   │   │   ├── azure/                 # AKS, PostgreSQL, ACR, Key Vault
-│   │   │   └── aws/                   # EKS, RDS, ECR (DR / multi-cloud)
+│   │   │   ├── azure/                 # networking, aks, database, acr, keyvault
+│   │   │   └── aws/                   # networking, eks, rds, ecr
 │   │   └── environments/
-│   │       ├── dev/
-│   │       ├── staging/
-│   │       └── prod/
+│   │       ├── dev/                   # Azure only, lowest cost
+│   │       ├── staging/               # Azure, mirrors prod (10.1.0.0/16)
+│   │       └── prod/                  # Azure primary + AWS DR (10.2 + 10.20)
 │   ├── helm/
 │   │   ├── charts/base-service/       # Shared Helm chart (HPA, PDB, deploy)
 │   │   └── values/
@@ -407,16 +407,17 @@ ZingyBank/
 │   │       ├── staging/               # Staging env overrides (2 replicas)
 │   │       └── prod/                  # Prod env overrides (3+ replicas, HPA)
 │   ├── kubernetes/
-│   │   ├── namespaces/
-│   │   ├── network-policies/          # PCI DSS microsegmentation
-│   │   ├── rbac/
-│   │   ├── monitoring/                # Prometheus + Grafana + alert rules
-│   │   ├── argocd/                    # AppProject + 11 Application manifests
-│   │   ├── secrets/                   # ClusterSecretStore + ExternalSecrets
+│   │   ├── namespaces/                # zingybank, zingybank-monitoring, zingybank-ingress
+│   │   ├── network-policies/          # PCI DSS default-deny + microsegmentation
+│   │   ├── rbac/                      # Roles (viewer/developer/operator/cicd) + bindings
+│   │   ├── ingress/                   # NGINX ingress + cert-manager ClusterIssuers
+│   │   ├── monitoring/                # Prometheus Helm values
+│   │   ├── argocd/                    # AppProject + 11 Application manifests (sync waves)
+│   │   ├── secrets/                   # ClusterSecretStore + ExternalSecrets + vault-init.sh
 │   │   ├── pgbouncer/                 # Deployment, Service, PDB
 │   │   └── linkerd/                   # Service mesh install + ServiceProfiles
 │   └── docker/
-│       └── postgres/                  # Multi-database init script
+│       └── postgres/                  # Multi-database init script (10 databases)
 │
 ├── .github/workflows/
 │   ├── ci.yml                         # Build → Test → Scan → Push (multi-cloud)
@@ -485,52 +486,142 @@ main push ──▶ CI (build / test / scan / push to GHCR)
 
 ---
 
-## Cloud Deployment
+## Infrastructure
+
+### Terraform Environments
+
+| Environment | Cloud | Purpose | State Key |
+|-------------|-------|---------|-----------|
+| `environments/dev` | Azure | Local testing, lowest cost nodes | `zingybank.terraform.tfstate` |
+| `environments/staging` | Azure | Pre-release testing, mirrors prod topology | `staging.terraform.tfstate` |
+| `environments/prod` | Azure (primary) + AWS (DR) | Production + disaster recovery | `prod.terraform.tfstate` |
+
+### Terraform Modules
+
+| Module | Path | What it provisions |
+|--------|------|--------------------|
+| `azure/networking` | `modules/azure/networking` | VNet, 4 subnets (system/app/DB/private-endpoints), NSGs, PostgreSQL private DNS zone |
+| `azure/aks` | `modules/azure/aks` | Private AKS cluster, system+app node pools, Azure AD RBAC, Log Analytics, Key Vault CSI |
+| `azure/database` | `modules/azure/database` | PostgreSQL Flexible Server 16, 10 databases, geo-redundant backups (35-day retention) |
+| `azure/acr` | `modules/azure/acr` | Premium ACR with geo-replication to westus2 |
+| `azure/keyvault` | `modules/azure/keyvault` | HSM-backed Key Vault, AKS managed identity access policy |
+| `aws/networking` | `modules/aws/networking` | VPC, 3-AZ public/private subnets, NAT gateways per-AZ, EKS+RDS security groups |
+| `aws/eks` | `modules/aws/eks` | Private EKS cluster, system+app node groups, IRSA OIDC provider, KMS secrets encryption |
+| `aws/rds` | `modules/aws/rds` | Multi-AZ RDS PostgreSQL 16, KMS encryption, 35-day backups, enhanced monitoring |
+| `aws/ecr` | `modules/aws/ecr` | 11 ECR repos (one per service), scan-on-push, lifecycle policies, immutable tags in prod |
 
 ### Deploy to Azure (AKS)
+
 ```bash
-cd infrastructure/terraform/environments/prod
+# 1. Provision cloud infrastructure
+cd infrastructure/terraform/environments/staging   # or prod
 terraform init
-terraform apply -var-file="azure.tfvars"
-```
+terraform apply \
+  -var="azure_subscription_id=<your-subscription-id>" \
+  -var="db_admin_login=zingybank" \
+  -var="db_admin_password=<strong-password>"
 
-### Deploy to AWS (EKS)
-```bash
-cd infrastructure/terraform/environments/prod
-terraform init
-terraform apply -var-file="aws.tfvars"
-```
+# 2. Get kubeconfig
+az aks get-credentials \
+  --resource-group zingybank-staging-rg \
+  --name zingybank-aks-staging
 
-### Install to any Kubernetes cluster
-```bash
-# Install Linkerd service mesh
-bash infrastructure/kubernetes/linkerd/install.sh
+# 3. Apply namespaces and security policies
+kubectl apply -f infrastructure/kubernetes/namespaces/zingybank.yml
+kubectl apply -f infrastructure/kubernetes/network-policies/default-deny.yml
 
-# Install monitoring stack
+# 4. Apply RBAC
+kubectl apply -f infrastructure/kubernetes/rbac/roles.yml
+kubectl apply -f infrastructure/kubernetes/rbac/role-bindings.yml
+
+# 5. Install NGINX Ingress + cert-manager
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm install ingress-nginx ingress-nginx/ingress-nginx \
+  --namespace zingybank-ingress --create-namespace
+
+helm repo add jetstack https://charts.jetstack.io
+helm install cert-manager jetstack/cert-manager \
+  --namespace cert-manager --create-namespace \
+  --set crds.enabled=true
+
+kubectl apply -f infrastructure/kubernetes/ingress/cert-issuer.yml
+kubectl apply -f infrastructure/kubernetes/ingress/ingress.yml   # Update domain first
+
+# 6. Seed Vault secrets
+bash infrastructure/kubernetes/secrets/vault-init.sh
+kubectl apply -f infrastructure/kubernetes/secrets/secret-store.yml
+kubectl apply -f infrastructure/kubernetes/secrets/zingybank-secrets.yml
+
+# 7. Install PgBouncer
+kubectl apply -f infrastructure/kubernetes/pgbouncer/deployment.yml
+
+# 8. Install monitoring stack
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm install monitoring prometheus-community/kube-prometheus-stack \
   -n zingybank-monitoring --create-namespace \
   -f infrastructure/kubernetes/monitoring/prometheus-values.yml
 
-# Install External Secrets Operator + Vault
-kubectl apply -f infrastructure/kubernetes/secrets/secret-store.yml
-kubectl apply -f infrastructure/kubernetes/secrets/zingybank-secrets.yml
+# 9. Install Linkerd service mesh
+bash infrastructure/kubernetes/linkerd/install.sh
+kubectl apply -f infrastructure/kubernetes/linkerd/mesh-config.yml
 
-# Install PgBouncer
-kubectl apply -f infrastructure/kubernetes/pgbouncer/deployment.yml
-
-# Deploy all services via ArgoCD
+# 10. Deploy all services via ArgoCD
+kubectl create namespace argocd
+kubectl apply -n argocd \
+  -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 kubectl apply -f infrastructure/kubernetes/argocd/zingybank-app.yml
 ```
 
+### Deploy to AWS (EKS — DR Region)
+
+```bash
+cd infrastructure/terraform/environments/prod
+terraform init
+terraform apply \
+  -var="azure_subscription_id=<id>" \
+  -var="aws_region=us-east-1" \
+  -var="db_admin_login=zingybank" \
+  -var="db_admin_password=<strong-password>"
+
+# Get kubeconfig for EKS
+aws eks update-kubeconfig \
+  --region us-east-1 \
+  --name zingybank-eks-prod-dr
+
+# Then apply the same kubectl steps 3–10 above
+```
+
+### Kubernetes Resource Map
+
+| Resource | File | Purpose |
+|----------|------|---------|
+| Namespaces | `kubernetes/namespaces/zingybank.yml` | zingybank, zingybank-monitoring, zingybank-ingress |
+| Network Policies | `kubernetes/network-policies/default-deny.yml` | Default deny-all + microsegmentation rules |
+| RBAC Roles | `kubernetes/rbac/roles.yml` | viewer, developer, operator, cicd, monitoring |
+| RBAC Bindings | `kubernetes/rbac/role-bindings.yml` | Service accounts + group bindings |
+| Ingress | `kubernetes/ingress/ingress.yml` | NGINX ingress with TLS, security headers, rate limiting |
+| TLS Issuers | `kubernetes/ingress/cert-issuer.yml` | cert-manager Let's Encrypt staging + prod issuers |
+| Secrets | `kubernetes/secrets/zingybank-secrets.yml` | ExternalSecret syncs from Vault |
+| PgBouncer | `kubernetes/pgbouncer/deployment.yml` | Connection pooler, 2 replicas, PDB |
+| ArgoCD | `kubernetes/argocd/zingybank-app.yml` | 11 applications with ordered sync waves |
+| Linkerd | `kubernetes/linkerd/mesh-config.yml` | Service mesh, mTLS, ServiceProfiles |
+
 ### Cloud Architecture
 
-| Cloud | Kubernetes | Registry | Database | Secrets |
-|-------|-----------|----------|----------|---------|
-| **Azure** | AKS | ACR | PostgreSQL Flexible Server | Azure Key Vault |
-| **AWS** | EKS | ECR | RDS PostgreSQL | AWS Secrets Manager |
-| **GCP** | GKE | Artifact Registry | Cloud SQL | Secret Manager |
-| **Any** | Any K8s | GHCR (default) | Self-managed PostgreSQL | HashiCorp Vault |
+| Cloud | Kubernetes | Registry | Database | Secrets | Role |
+|-------|-----------|----------|----------|---------|------|
+| **Azure** | AKS (private) | ACR Premium | PostgreSQL Flexible Server | Azure Key Vault | Primary |
+| **AWS** | EKS (private) | ECR | RDS PostgreSQL Multi-AZ | AWS Secrets Manager | DR |
+| **Any** | Any K8s | GHCR (default) | Self-managed PostgreSQL | HashiCorp Vault | Local / Other |
+
+### CIDR Allocation
+
+| Environment | VNet/VPC CIDR | AKS/EKS Nodes | Database |
+|-------------|--------------|---------------|---------|
+| dev | `10.0.0.0/16` | `10.0.1-2.0/24` | `10.0.4.0/24` |
+| staging | `10.1.0.0/16` | `10.1.1-2.0/24` | `10.1.4.0/24` |
+| prod (Azure) | `10.2.0.0/16` | `10.2.1-2.0/24` | `10.2.4.0/24` |
+| prod-dr (AWS) | `10.20.0.0/16` | `10.20.10-12.0/24` | `10.20.20-22.0/24` |
 
 ---
 
