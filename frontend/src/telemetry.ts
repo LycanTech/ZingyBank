@@ -4,23 +4,21 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
-import { Resource } from '@opentelemetry/resources';
+import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 
 export function initTelemetry() {
-  const resource = new Resource({
-    [ATTR_SERVICE_NAME]: 'zingybank-frontend',
-    [ATTR_SERVICE_VERSION]: '1.0.0',
-    'deployment.environment': import.meta.env.MODE,
-  });
-
   const exporter = new OTLPTraceExporter({
     // proxied through nginx → jaeger:4318
     url: '/otlp/v1/traces',
   });
 
   const provider = new WebTracerProvider({
-    resource,
+    resource: resourceFromAttributes({
+      [ATTR_SERVICE_NAME]: 'zingybank-frontend',
+      [ATTR_SERVICE_VERSION]: '1.0.0',
+      'deployment.environment': import.meta.env.MODE,
+    }),
     spanProcessors: [new BatchSpanProcessor(exporter)],
   });
 
