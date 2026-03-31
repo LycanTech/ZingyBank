@@ -1,0 +1,118 @@
+# ZingyBank RBAC Role Bindings
+# Binds roles to service accounts used by each component
+# Replace placeholder names with actual Azure AD group IDs or user emails
+
+---
+# ─── Service Accounts ─────────────────────────────────────────────────────────
+
+# Service account for ArgoCD deployments
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: zingybank-cicd
+  namespace: zingybank
+  labels:
+    app.kubernetes.io/part-of: zingybank
+
+---
+# Service account for Prometheus scraping
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: zingybank-prometheus
+  namespace: zingybank-monitoring
+  labels:
+    app.kubernetes.io/part-of: zingybank
+
+---
+# ─── RoleBindings ─────────────────────────────────────────────────────────────
+
+# CI/CD service account gets deploy permissions
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: zingybank-cicd-binding
+  namespace: zingybank
+  labels:
+    app.kubernetes.io/part-of: zingybank
+subjects:
+  - kind: ServiceAccount
+    name: zingybank-cicd
+    namespace: zingybank
+roleRef:
+  kind: Role
+  name: zingybank-cicd
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Developer team — read-only + log access (bind to Azure AD group or user)
+# Replace <developer-group-id> with actual Azure AD group object ID
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: zingybank-developer-binding
+  namespace: zingybank
+  labels:
+    app.kubernetes.io/part-of: zingybank
+subjects:
+  - kind: Group
+    name: zingybank-developers   # Azure AD group name / OIDC group claim
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: zingybank-developer
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Operations team — can restart deployments and scale
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: zingybank-operator-binding
+  namespace: zingybank
+  labels:
+    app.kubernetes.io/part-of: zingybank
+subjects:
+  - kind: Group
+    name: zingybank-operators
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: zingybank-operator
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# ─── ClusterRoleBindings ──────────────────────────────────────────────────────
+
+# Prometheus gets cluster-wide read for service discovery
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: zingybank-prometheus-binding
+  labels:
+    app.kubernetes.io/part-of: zingybank
+subjects:
+  - kind: ServiceAccount
+    name: zingybank-prometheus
+    namespace: zingybank-monitoring
+roleRef:
+  kind: ClusterRole
+  name: zingybank-monitoring
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Cluster-wide view access for monitoring dashboards
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: zingybank-viewer-binding
+  labels:
+    app.kubernetes.io/part-of: zingybank
+subjects:
+  - kind: Group
+    name: zingybank-viewers
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: zingybank-viewer
+  apiGroup: rbac.authorization.k8s.io

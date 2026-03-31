@@ -33,7 +33,7 @@ metadata:
 spec:
   project: zingybank
   source:
-    repoURL: https://github.com/YOUR_ORG/ZingyBankingApp
+    repoURL: https://github.com/LycanTech/ZingyBank
     targetRevision: main
     path: infrastructure/helm/charts/base-service
     helm:
@@ -59,7 +59,7 @@ metadata:
 spec:
   project: zingybank
   source:
-    repoURL: https://github.com/YOUR_ORG/ZingyBankingApp
+    repoURL: https://github.com/LycanTech/ZingyBank
     targetRevision: main
     path: infrastructure/helm/charts/base-service
     helm:
@@ -83,7 +83,7 @@ metadata:
 spec:
   project: zingybank
   source:
-    repoURL: https://github.com/YOUR_ORG/ZingyBankingApp
+    repoURL: https://github.com/LycanTech/ZingyBank
     targetRevision: main
     path: infrastructure/helm/charts/base-service
     helm:
@@ -107,7 +107,7 @@ metadata:
 spec:
   project: zingybank
   source:
-    repoURL: https://github.com/YOUR_ORG/ZingyBankingApp
+    repoURL: https://github.com/LycanTech/ZingyBank
     targetRevision: main
     path: infrastructure/helm/charts/base-service
     helm:
@@ -131,7 +131,7 @@ metadata:
 spec:
   project: zingybank
   source:
-    repoURL: https://github.com/YOUR_ORG/ZingyBankingApp
+    repoURL: https://github.com/LycanTech/ZingyBank
     targetRevision: main
     path: infrastructure/helm/charts/base-service
     helm:
@@ -155,7 +155,7 @@ metadata:
 spec:
   project: zingybank
   source:
-    repoURL: https://github.com/YOUR_ORG/ZingyBankingApp
+    repoURL: https://github.com/LycanTech/ZingyBank
     targetRevision: main
     path: infrastructure/helm/charts/base-service
     helm:
@@ -179,7 +179,7 @@ metadata:
 spec:
   project: zingybank
   source:
-    repoURL: https://github.com/YOUR_ORG/ZingyBankingApp
+    repoURL: https://github.com/LycanTech/ZingyBank
     targetRevision: main
     path: infrastructure/helm/charts/base-service
     helm:
@@ -203,7 +203,7 @@ metadata:
 spec:
   project: zingybank
   source:
-    repoURL: https://github.com/YOUR_ORG/ZingyBankingApp
+    repoURL: https://github.com/LycanTech/ZingyBank
     targetRevision: main
     path: infrastructure/helm/charts/base-service
     helm:
@@ -227,7 +227,7 @@ metadata:
 spec:
   project: zingybank
   source:
-    repoURL: https://github.com/YOUR_ORG/ZingyBankingApp
+    repoURL: https://github.com/LycanTech/ZingyBank
     targetRevision: main
     path: infrastructure/helm/charts/base-service
     helm:
@@ -251,7 +251,7 @@ metadata:
 spec:
   project: zingybank
   source:
-    repoURL: https://github.com/YOUR_ORG/ZingyBankingApp
+    repoURL: https://github.com/LycanTech/ZingyBank
     targetRevision: main
     path: infrastructure/helm/charts/base-service
     helm:
@@ -275,7 +275,7 @@ metadata:
 spec:
   project: zingybank
   source:
-    repoURL: https://github.com/YOUR_ORG/ZingyBankingApp
+    repoURL: https://github.com/LycanTech/ZingyBank
     targetRevision: main
     path: infrastructure/helm/charts/base-service
     helm:

@@ -1,0 +1,48 @@
+# cert-manager ClusterIssuers — Let's Encrypt TLS certificates
+# Automatically provisions and renews TLS certs for all ZingyBank ingresses
+#
+# Prerequisites:
+#   helm repo add jetstack https://charts.jetstack.io
+#   helm install cert-manager jetstack/cert-manager \
+#     --namespace cert-manager --create-namespace \
+#     --set crds.enabled=true
+
+---
+# Staging issuer — uses Let's Encrypt staging (no rate limits, untrusted cert)
+# Use this first to verify your domain is wired up correctly
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+  labels:
+    app.kubernetes.io/part-of: zingybank
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: devops@zingybank.example.com  # Replace with real email
+    privateKeySecretRef:
+      name: letsencrypt-staging-key
+    solvers:
+      - http01:
+          ingress:
+            ingressClassName: nginx
+
+---
+# Production issuer — trusted Let's Encrypt certificates
+# Only switch to this after staging works (rate limit: 5 certs/week per domain)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+  labels:
+    app.kubernetes.io/part-of: zingybank
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: devops@zingybank.example.com  # Replace with real email
+    privateKeySecretRef:
+      name: letsencrypt-prod-key
+    solvers:
+      - http01:
+          ingress:
+            ingressClassName: nginx
