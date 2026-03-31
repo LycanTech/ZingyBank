@@ -5,6 +5,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import App from './App';
 import './styles/globals.css';
+import { initTelemetry } from './telemetry';
+import { initGlobalErrorLogging } from './utils/logger';
+
+initTelemetry();
+initGlobalErrorLogging();
 
 const queryClient = new QueryClient({
   defaultOptions: {

@@ -17,6 +17,7 @@ const CardsPage = lazy(() => import('@/pages/CardsPage'));
 const StatementsPage = lazy(() => import('@/pages/StatementsPage'));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
+const ObservabilityPage = lazy(() => import('@/pages/ObservabilityPage'));
 
 const PageLoader: React.FC = () => (
   <div className="flex items-center justify-center min-h-[60vh]">
@@ -42,6 +43,7 @@ function App() {
             <Route path="/cards" element={<CardsPage />} />
             <Route path="/statements" element={<StatementsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/observability" element={<ObservabilityPage />} />
           </Route>
         </Route>
         <Route path="*" element={<NotFoundPage />} />

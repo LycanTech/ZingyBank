@@ -12,8 +12,10 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Activity,
 } from 'lucide-react';
 import { useUiStore } from '@/stores/ui.store';
+import { useAuthStore } from '@/stores/auth.store';
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -26,8 +28,12 @@ const navItems = [
   { to: '/profile', label: 'Profile', icon: User },
 ];
 
+const adminRoles = ['ADMIN', 'MANAGER', 'COMPLIANCE_OFFICER'];
+
 export const Sidebar: React.FC = () => {
   const { sidebarCollapsed, toggleSidebar, mobileMenuOpen, setMobileMenu } = useUiStore();
+  const { roles } = useAuthStore();
+  const isAdmin = roles.some((r) => adminRoles.includes(r));
 
   const sidebarContent = (
     <div className="flex flex-col h-full bg-zingy-900 text-white">
@@ -72,6 +78,31 @@ export const Sidebar: React.FC = () => {
           </NavLink>
         ))}
       </nav>
+
+      {/* Observability section — admin/manager only */}
+      {isAdmin && (
+        <div className="px-2 pb-2 border-t border-zingy-800 pt-3">
+          {!sidebarCollapsed && (
+            <p className="px-3 mb-1 text-xs font-semibold text-zingy-400 uppercase tracking-wider">
+              Observability
+            </p>
+          )}
+          <NavLink
+            to="/observability"
+            onClick={() => setMobileMenu(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ${
+                isActive
+                  ? 'bg-zingy-700 text-white'
+                  : 'text-zingy-100 hover:bg-zingy-800 hover:text-white'
+              }`
+            }
+          >
+            <Activity className="w-5 h-5 flex-shrink-0" />
+            {!sidebarCollapsed && <span>Monitoring</span>}
+          </NavLink>
+        </div>
+      )}
 
       {/* Collapse toggle - desktop only */}
       <div className="hidden md:block p-2 border-t border-zingy-800">

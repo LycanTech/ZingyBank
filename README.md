@@ -251,7 +251,7 @@ docker-compose up -d postgres redis zookeeper kafka pgbouncer mailhog kafka-ui
 
 ### 3. Start observability stack
 ```bash
-docker-compose up -d jaeger loki promtail grafana vault
+docker-compose up -d prometheus jaeger loki promtail grafana vault
 ```
 
 ### 4. Seed Vault secrets (first time only)
@@ -278,20 +278,88 @@ curl http://localhost:8081/api/v1/auth/health
 curl http://localhost:8082/api/v1/accounts/health
 ```
 
-### Local Dev URLs
+### Local Dev URLs & Login Credentials
 
-| Service | URL |
-|---------|-----|
-| Frontend (React) | http://localhost:5173 |
-| API Gateway | http://localhost:8080 |
-| Grafana (admin / zingybank-grafana-admin) | http://localhost:3001 |
-| Jaeger UI | http://localhost:16686 |
-| Vault UI | http://localhost:8200 |
-| Kafka UI | http://localhost:9091 |
-| MailHog (email testing) | http://localhost:8025 |
-| Swagger UI (per service) | http://localhost:{port}/swagger-ui.html |
-| Prometheus Metrics | http://localhost:{port}/actuator/prometheus |
-| PgBouncer | localhost:5433 |
+> All credentials below are for **local development only**. In Kubernetes environments all secrets are managed via HashiCorp Vault + External Secrets Operator.
+
+#### Frontend & API Gateway
+
+| Service | URL | Notes |
+|---------|-----|-------|
+| **Frontend (React)** | http://localhost:3002 | Register an account to log in |
+| **Observability Page** | http://localhost:3002/observability | Requires ADMIN / MANAGER / COMPLIANCE_OFFICER role |
+| **API Gateway** | http://localhost:8080 | Routes to all microservices |
+
+#### Observability & Tooling
+
+| Service | URL | Username | Password / Token |
+|---------|-----|----------|-----------------|
+| **Grafana** | http://localhost:3001 | `admin` | `Grafana@Admin2024!` |
+| **Grafana — ZingyBank Overview** | http://localhost:3001/d/zingybank-overview/zingybank-e28094-service-overview | `admin` | `Grafana@Admin2024!` |
+| **Prometheus** | http://localhost:9090 | *(no auth)* | — |
+| **Prometheus — Targets** | http://localhost:9090/targets | *(no auth)* | — |
+| **Jaeger UI** | http://localhost:16686 | *(no auth)* | — |
+| **Kafka UI** | http://localhost:9091 | *(no auth)* | — |
+| **MailHog** | http://localhost:8025 | *(no auth)* | — |
+| **Vault UI** | http://localhost:8200/ui | *(token auth)* | `zingybank-local-vault-token` |
+
+#### Microservices — Swagger UI & Health Checks
+
+| Service | Port | Swagger UI | Health |
+|---------|------|------------|--------|
+| **api-gateway** | 8080 | http://localhost:8080/swagger-ui.html | http://localhost:8080/actuator/health |
+| **auth-service** | 8081 | http://localhost:8081/swagger-ui.html | http://localhost:8081/actuator/health |
+| **account-service** | 8082 | http://localhost:8082/swagger-ui.html | http://localhost:8082/actuator/health |
+| **transaction-service** | 8083 | http://localhost:8083/swagger-ui.html | http://localhost:8083/actuator/health |
+| **payment-service** | 8084 | http://localhost:8084/swagger-ui.html | http://localhost:8084/actuator/health |
+| **loan-service** | 8085 | http://localhost:8085/swagger-ui.html | http://localhost:8085/actuator/health |
+| **card-service** | 8086 | http://localhost:8086/swagger-ui.html | http://localhost:8086/actuator/health |
+| **kyc-service** | 8087 | http://localhost:8087/swagger-ui.html | http://localhost:8087/actuator/health |
+| **notification-service** | 8088 | http://localhost:8088/swagger-ui.html | http://localhost:8088/actuator/health |
+| **statement-service** | 8089 | http://localhost:8089/swagger-ui.html | http://localhost:8089/actuator/health |
+| **audit-service** | 8090 | http://localhost:8090/swagger-ui.html | http://localhost:8090/actuator/health |
+
+#### Databases & Infrastructure
+
+| Service | Host | Port | Username | Password |
+|---------|------|------|----------|----------|
+| **PostgreSQL** | `localhost` | `5432` | `zingybank` | `ZingyDev2024` |
+| **PgBouncer** | `localhost` | `5433` | `zingybank` | `ZingyDev2024` |
+| **Redis** | `localhost` | `6379` | — | `Chikwex@ZingyDev!` |
+
+#### Application User Roles
+
+| Role | Description | Access |
+|------|-------------|--------|
+| `CUSTOMER` | Default role on registration | Accounts, transactions, cards, loans, KYC, statements |
+| `TELLER` | Bank teller | All customer data + manual transaction overrides |
+| `MANAGER` | Branch manager | Teller access + loan approvals + Observability page |
+| `COMPLIANCE_OFFICER` | AML/KYC reviewer | KYC workflows, suspicious activity + Observability page |
+| `ADMIN` | System administrator | Full access including Observability page |
+
+```sql
+-- Grant ADMIN role to a user (run in zingybank_auth DB)
+UPDATE user_roles SET role='ADMIN'
+WHERE user_id = (SELECT id FROM users WHERE email = 'your@email.com');
+```
+
+#### Get an API Token
+
+```bash
+# 1. Register (password must be ≥ 12 characters)
+curl -X POST http://localhost:8081/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  --data-raw '{"email":"you@example.com","password":"SecurePass123!","firstName":"First","lastName":"Last","phoneNumber":"+13474711544"}'
+
+# 2. Login — returns accessToken (15 min) and refreshToken (7 days)
+curl -X POST http://localhost:8081/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  --data-raw '{"email":"you@example.com","password":"SecurePass123!"}'
+
+# 3. Use the token on any service
+curl http://localhost:8082/api/v1/accounts \
+  -H "Authorization: Bearer <accessToken>"
+```
 
 ---
 
