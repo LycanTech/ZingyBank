@@ -1,6 +1,9 @@
 # Azure Kubernetes Service (AKS) Module
 # Banking: Private cluster, Azure AD RBAC, pod security policies
 
+# Fetch current Azure tenant/subscription for AAD RBAC
+data "azurerm_client_config" "current" {}
+
 variable "resource_group_name" {
   type = string
 }
@@ -58,16 +61,18 @@ resource "azurerm_kubernetes_cluster" "main" {
   }
 
   # Azure CNI networking for VNet integration
+  # service_cidr uses 172.16.0.0/16 to avoid overlapping with VNet CIDRs (10.x.x.x)
   network_profile {
     network_plugin    = "azure"
     network_policy    = "calico" # For Kubernetes NetworkPolicies
     load_balancer_sku = "standard"
-    service_cidr      = "10.1.0.0/16"
-    dns_service_ip    = "10.1.0.10"
+    service_cidr      = "172.16.0.0/16"
+    dns_service_ip    = "172.16.0.10"
   }
 
-  # Azure AD RBAC integration
+  # Azure AD RBAC integration — tenant_id fetched from current login context
   azure_active_directory_role_based_access_control {
+    tenant_id          = data.azurerm_client_config.current.tenant_id
     azure_rbac_enabled = true
   }
 
