@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/lycantech/zingybank/transaction-service
-  tag: "main-latest"
+  tag: "main-5e12263"
 service:
   port: 8083
 replicaCount: 2
