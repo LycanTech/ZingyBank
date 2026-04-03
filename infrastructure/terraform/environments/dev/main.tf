@@ -10,6 +10,15 @@ terraform {
       version = "~> 4.0"
     }
   }
+
+  # Remote state in Azure Blob Storage — create the storage account first (Phase 2 below)
+  # Run: terraform init -backend-config="access_key=<storage-account-key>"
+  backend "azurerm" {
+    resource_group_name  = "zingybank-terraform-state"
+    storage_account_name = "zingybankstate"
+    container_name       = "tfstate"
+    key                  = "dev.terraform.tfstate"
+  }
 }
 
 provider "azurerm" {

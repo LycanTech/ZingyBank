@@ -16,10 +16,10 @@ terraform {
   }
 
   # Uncomment after creating the storage account:
-  # backend "azurerm" {
-  #   resource_group_name  = "zingybank-terraform-state"
-  #   storage_account_name = "zingybankstate"
-  #   container_name       = "tfstate"
-  #   key                  = "zingybank.terraform.tfstate"
-  # }
+   backend "azurerm" {
+      resource_group_name  = "zingybank-terraform-state"
+      storage_account_name = "zingybankstate"
+      container_name       = "tfstate"
+      key                  = "zingybank.terraform.tfstate"
+   }
 }
