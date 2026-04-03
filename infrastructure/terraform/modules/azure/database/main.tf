@@ -39,13 +39,14 @@ resource "azurerm_postgresql_flexible_server" "main" {
   version                       = "16"
   delegated_subnet_id           = var.database_subnet_id
   private_dns_zone_id           = var.postgres_dns_zone_id
+  public_network_access_enabled = false # Required when using VNet delegation
   administrator_login           = var.administrator_login
   administrator_password        = var.administrator_password
   zone                          = "1"
   storage_mb                    = 65536
   sku_name                      = "GP_Standard_D2s_v3"
   backup_retention_days         = 35  # Banking: Extended backup retention
-  geo_redundant_backup_enabled  = true # Banking: Geo-redundant backups
+  geo_redundant_backup_enabled  = false # Dev: disable geo-redundant backups (enable in prod)
 
   tags = {
     Environment = var.environment
