@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/lycantech/zingybank/statement-service
-  tag: "main-252bbd6"
+  tag: "main-178fac7"
 service:
   port: 8089
 replicaCount: 2
