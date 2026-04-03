@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/lycantech/zingybank/api-gateway
-  tag: "main-586ecf6"
+  tag: "main-252bbd6"
 service:
   port: 8080
 replicaCount: 3
