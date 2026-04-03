@@ -27,7 +27,7 @@ variable "aks_app_subnet_id" {
 
 variable "kubernetes_version" {
   type    = string
-  default = "1.31"
+  default = "1.32"
 }
 
 resource "azurerm_kubernetes_cluster" "main" {
