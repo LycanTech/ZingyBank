@@ -1,0 +1,157 @@
+# ZingyBank Test Data Seed Job
+#
+# Registers 4 test users via the auth-service API, then promotes roles via psql.
+# Run once after AKS deploy: kubectl apply -f infrastructure/kubernetes/jobs/seed-test-data.yml
+#
+# Test accounts created:
+#   admin@zingybank.test   / TestAdmin123!    → ADMIN
+#   teller@zingybank.test  / TestTeller123!   → TELLER
+#   alice@zingybank.test   / TestAlice123!    → CUSTOMER  (use this to test opening accounts)
+#   bob@zingybank.test     / TestBob123!      → CUSTOMER
+#
+# Delete the job after seeding:
+#   kubectl delete job seed-test-data -n zingybank
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: seed-test-data
+  namespace: zingybank
+  labels:
+    app.kubernetes.io/name: seed-test-data
+    app.kubernetes.io/part-of: zingybank
+    app.kubernetes.io/component: job
+spec:
+  ttlSecondsAfterFinished: 600   # auto-delete 10 min after completion
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: seed-test-data
+        app.kubernetes.io/part-of: zingybank
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      initContainers:
+        # Wait until auth-service is accepting connections before seeding
+        - name: wait-for-auth
+          image: curlimages/curl:latest
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for auth-service..."
+              until curl -sf http://auth-service:8081/actuator/health/readiness; do
+                echo "auth-service not ready — retrying in 5s"
+                sleep 5
+              done
+              echo "auth-service is ready"
+      containers:
+        # Step 1: Register all test users via the REST API
+        - name: register-users
+          image: curlimages/curl:latest
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          command:
+            - sh
+            - -c
+            - |
+              BASE=http://auth-service:8081/api/v1/auth
+
+              register() {
+                EMAIL=$1; PASS=$2; FIRST=$3; LAST=$4; PHONE=$5
+                echo "Registering $EMAIL..."
+                STATUS=$(curl -s -o /tmp/resp.txt -w "%{http_code}" \
+                  -X POST "$BASE/register" \
+                  -H "Content-Type: application/json" \
+                  --data-raw "{\"email\":\"$EMAIL\",\"password\":\"$PASS\",\"firstName\":\"$FIRST\",\"lastName\":\"$LAST\",\"phoneNumber\":\"$PHONE\"}")
+                if [ "$STATUS" = "200" ] || [ "$STATUS" = "201" ]; then
+                  echo "  ✓ $EMAIL registered (HTTP $STATUS)"
+                elif [ "$STATUS" = "409" ]; then
+                  echo "  ~ $EMAIL already exists — skipping"
+                else
+                  echo "  ✗ $EMAIL failed (HTTP $STATUS): $(cat /tmp/resp.txt)"
+                fi
+              }
+
+              register "admin@zingybank.test"  "TestAdmin123!"  "Admin"  "User"   "+10000000001"
+              register "teller@zingybank.test" "TestTeller123!" "Teller" "User"   "+10000000002"
+              register "alice@zingybank.test"  "TestAlice123!"  "Alice"  "Test"   "+10000000003"
+              register "bob@zingybank.test"    "TestBob123!"    "Bob"    "Test"   "+10000000004"
+
+              echo ""
+              echo "Registration complete. Role promotion happens in the next container."
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+
+        # Step 2: Promote admin and teller roles via direct DB update
+        - name: promote-roles
+          image: postgres:16-alpine
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: zingybank-database-secret
+                  key: DB_PASSWORD
+            - name: PGHOST
+              value: "pgbouncer"
+            - name: PGPORT
+              value: "5432"
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: zingybank-database-secret
+                  key: DB_USERNAME
+            - name: PGDATABASE
+              value: "zingybank_auth"
+          command:
+            - sh
+            - -c
+            - |
+              echo "Promoting roles..."
+
+              psql -c "
+                UPDATE user_roles
+                SET role = 'ADMIN'
+                WHERE user_id = (SELECT id FROM users WHERE email = 'admin@zingybank.test');
+              " && echo "  ✓ admin@zingybank.test → ADMIN"
+
+              psql -c "
+                UPDATE user_roles
+                SET role = 'TELLER'
+                WHERE user_id = (SELECT id FROM users WHERE email = 'teller@zingybank.test');
+              " && echo "  ✓ teller@zingybank.test → TELLER"
+
+              echo ""
+              echo "Seed complete. Test accounts are ready:"
+              psql -c "
+                SELECT u.email, ur.role
+                FROM users u
+                JOIN user_roles ur ON u.id = ur.user_id
+                WHERE u.email LIKE '%@zingybank.test'
+                ORDER BY ur.role;
+              "
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}

@@ -134,7 +134,7 @@ spec:
         - protocol: TCP
           port: 8090
 ---
-# Allow ingress controller to reach API gateway
+# Allow ingress controller to reach API gateway and frontend
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -142,18 +142,45 @@ metadata:
   namespace: zingybank
 spec:
   podSelector:
-    matchLabels:
-      app.kubernetes.io/name: api-gateway
+    matchExpressions:
+      - key: app.kubernetes.io/name
+        operator: In
+        values:
+          - api-gateway
+          - frontend
   policyTypes:
     - Ingress
   ingress:
     - from:
         - namespaceSelector:
             matchLabels:
-              app.kubernetes.io/part-of: zingybank
+              kubernetes.io/metadata.name: zingybank-ingress
           podSelector:
             matchLabels:
               app.kubernetes.io/name: ingress-nginx
       ports:
         - protocol: TCP
           port: 8080
+        - protocol: TCP
+          port: 3000
+---
+# Allow seed/admin jobs to reach auth-service (port 8081) and pgbouncer (port 5432)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-jobs-to-services
+  namespace: zingybank
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: microservice
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: job
+      ports:
+        - protocol: TCP
+          port: 8081

@@ -1,0 +1,99 @@
+# Grant ADMIN role to an existing registered user
+#
+# Usage:
+#   1. Edit USER_EMAIL below to match your registered account
+#   2. kubectl apply -f infrastructure/kubernetes/jobs/grant-admin-access.yml
+#   3. Check logs: kubectl logs -n zingybank job/grant-admin-access
+#   4. Log out and back in — the new ADMIN role takes effect on next login
+#
+# For local Docker:
+#   docker exec -it zingybank-postgres psql -U zingybank -d zingybank_auth \
+#     -c "UPDATE user_roles SET role='ADMIN' WHERE user_id=(SELECT id FROM users WHERE email='lycandevops@gmail.com');"
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: grant-admin-access
+  namespace: zingybank
+  labels:
+    app.kubernetes.io/name: grant-admin-access
+    app.kubernetes.io/part-of: zingybank
+    app.kubernetes.io/component: job
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: grant-admin-access
+        app.kubernetes.io/part-of: zingybank
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: grant-admin
+          image: postgres:16-alpine
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          env:
+            - name: USER_EMAIL
+              value: "lycandevops@gmail.com"    # ← change this if needed
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: zingybank-database-secret
+                  key: DB_PASSWORD
+            - name: PGHOST
+              value: "pgbouncer"
+            - name: PGPORT
+              value: "5432"
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: zingybank-database-secret
+                  key: DB_USERNAME
+            - name: PGDATABASE
+              value: "zingybank_auth"
+          command:
+            - sh
+            - -c
+            - |
+              echo "Granting ADMIN role to: $USER_EMAIL"
+
+              ROWS=$(psql -t -c "SELECT COUNT(*) FROM users WHERE email = '$USER_EMAIL';")
+              ROWS=$(echo $ROWS | tr -d ' ')
+
+              if [ "$ROWS" = "0" ]; then
+                echo "ERROR: User '$USER_EMAIL' not found. Register first via the frontend."
+                exit 1
+              fi
+
+              psql -c "
+                UPDATE user_roles
+                SET role = 'ADMIN'
+                WHERE user_id = (SELECT id FROM users WHERE email = '$USER_EMAIL');
+              "
+
+              echo ""
+              echo "Done. Current role:"
+              psql -c "
+                SELECT u.email, ur.role, u.created_at
+                FROM users u
+                JOIN user_roles ur ON u.id = ur.user_id
+                WHERE u.email = '$USER_EMAIL';
+              "
+              echo ""
+              echo "Log out and back in to activate the ADMIN role."
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}

@@ -4,6 +4,12 @@
 #   kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 # Then apply this file:
 #   kubectl apply -f infrastructure/kubernetes/argocd/zingybank-app.yml
+#
+# Sync wave order:
+#   Wave 1 — api-gateway, frontend
+#   Wave 2 — auth-service
+#   Wave 3 — account, transaction, payment, loan, card, kyc
+#   Wave 4 — notification, statement, audit
 
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
@@ -23,6 +29,32 @@ spec:
     - group: '*'
       kind: '*'
 ---
+---
+# ─── Frontend ─────────────────────────────────────────────────────────────────
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: zingybank-frontend
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: zingybank
+  source:
+    repoURL: https://github.com/LycanTech/ZingyBank
+    targetRevision: main
+    path: infrastructure/kubernetes/frontend
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: zingybank
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+# ─── API Gateway ──────────────────────────────────────────────────────────────
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
