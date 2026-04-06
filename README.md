@@ -4,6 +4,63 @@ A production-grade retail banking platform built with **Java 21 + Spring Boot 3.
 
 ---
 
+## Live App Links
+
+### Local Development (Docker Compose)
+
+| App | URL | Notes |
+|-----|-----|-------|
+| **Frontend** | http://localhost:3002 | React app — register to get started |
+| **Observability** | http://localhost:3002/observability | Requires ADMIN / MANAGER role |
+| **API Gateway** | http://localhost:8080 | Entry point for all API calls |
+| **Grafana** | http://localhost:3001 | `admin` / `Grafana@Admin2024!` |
+| **Grafana — ZingyBank Overview** | http://localhost:3001/d/zingybank-overview/zingybank-e28094-service-overview | Dashboard |
+| **Prometheus** | http://localhost:9090 | Metrics — no auth |
+| **Jaeger** | http://localhost:16686 | Distributed traces — no auth |
+| **Kafka UI** | http://localhost:9091 | Kafka topics & messages — no auth |
+| **MailHog** | http://localhost:8025 | Catch-all email — no auth |
+| **Vault** | http://localhost:8200/ui | Token: `zingybank-local-vault-token` |
+
+### Local Swagger UI (per service)
+
+| Service | URL |
+|---------|-----|
+| **api-gateway** | http://localhost:8080/swagger-ui.html |
+| **auth-service** | http://localhost:8081/swagger-ui.html |
+| **account-service** | http://localhost:8082/swagger-ui.html |
+| **transaction-service** | http://localhost:8083/swagger-ui.html |
+| **payment-service** | http://localhost:8084/swagger-ui.html |
+| **loan-service** | http://localhost:8085/swagger-ui.html |
+| **card-service** | http://localhost:8086/swagger-ui.html |
+| **kyc-service** | http://localhost:8087/swagger-ui.html |
+| **notification-service** | http://localhost:8088/swagger-ui.html |
+| **statement-service** | http://localhost:8089/swagger-ui.html |
+| **audit-service** | http://localhost:8090/swagger-ui.html |
+
+### AKS (Azure Kubernetes Service)
+
+> Replace `<INGRESS-IP>` with the external IP from:
+> ```bash
+> kubectl get svc -n zingybank-ingress ingress-nginx-controller
+> ```
+
+| App | URL |
+|-----|-----|
+| **Frontend** | http://`<INGRESS-IP>` or https://zingybank.example.com |
+| **API** | http://`<INGRESS-IP>`/api or https://api.zingybank.example.com |
+| **Grafana** | https://monitoring.zingybank.example.com/grafana |
+| **Prometheus** | https://monitoring.zingybank.example.com/prometheus |
+| **Jaeger** | https://monitoring.zingybank.example.com/jaeger |
+| **ArgoCD** | `kubectl port-forward svc/argocd-server -n argocd 8080:443` → http://localhost:8080 |
+
+> **Get ArgoCD password:**
+> ```bash
+> kubectl get secret argocd-initial-admin-secret -n argocd \
+>   -o jsonpath="{.data.password}" | base64 -d
+> ```
+
+---
+
 ## Architecture
 
 ```
