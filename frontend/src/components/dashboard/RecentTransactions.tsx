@@ -24,15 +24,15 @@ function getTransactionIcon(type: string) {
     case 'DEPOSIT':
     case 'INTEREST':
     case 'REFUND':
-      return { icon: ArrowDownLeft, color: 'text-success bg-green-50' };
+      return { icon: ArrowDownLeft, color: 'text-emerald-400 bg-emerald-500/10 ring-1 ring-emerald-500/20' };
     case 'WITHDRAWAL':
     case 'PAYMENT':
     case 'FEE':
-      return { icon: ArrowUpRight, color: 'text-danger bg-red-50' };
+      return { icon: ArrowUpRight, color: 'text-red-400 bg-red-500/10 ring-1 ring-red-500/20' };
     case 'TRANSFER':
-      return { icon: ArrowLeftRight, color: 'text-blue-600 bg-blue-50' };
+      return { icon: ArrowLeftRight, color: 'text-sky-400 bg-sky-500/10 ring-1 ring-sky-500/20' };
     default:
-      return { icon: ArrowUpRight, color: 'text-bank-muted bg-gray-50' };
+      return { icon: ArrowUpRight, color: 'text-bank-muted bg-bank-border' };
   }
 }
 
@@ -56,13 +56,13 @@ export const RecentTransactions: React.FC<RecentTransactionsProps> = ({ accounts
   const usingSample = !transactionData?.content || transactionData.content.length === 0;
 
   return (
-    <div className="bg-white rounded-xl border border-bank-border shadow-sm">
+    <div className="bg-bank-card rounded-xl border border-bank-border">
       <div className="flex items-center justify-between px-5 py-4 border-b border-bank-border">
-        <h3 className="text-lg font-semibold text-bank-text">Recent Transactions</h3>
+        <h3 className="text-base font-semibold text-bank-text">Recent Transactions</h3>
         {!usingSample && (
           <Link
             to="/accounts"
-            className="text-sm text-zingy-600 font-medium hover:text-zingy-700 transition-colors"
+            className="text-sm text-zingy-400 font-medium hover:text-zingy-300 transition-colors"
           >
             View All
           </Link>
@@ -75,8 +75,8 @@ export const RecentTransactions: React.FC<RecentTransactionsProps> = ({ accounts
           const credit = isCredit(txn.type);
 
           return (
-            <div key={txn.id} className="flex items-center gap-4 px-5 py-3.5">
-              <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${color}`}>
+            <div key={txn.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-bank-border/30 transition-colors">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
                 <Icon className="w-4 h-4" />
               </div>
               <div className="flex-1 min-w-0">
@@ -87,7 +87,7 @@ export const RecentTransactions: React.FC<RecentTransactionsProps> = ({ accounts
               </div>
               <span
                 className={`text-sm font-semibold whitespace-nowrap ${
-                  credit ? 'text-success' : 'text-danger'
+                  credit ? 'text-emerald-400' : 'text-red-400'
                 }`}
               >
                 {credit ? '+' : '-'}{formatCurrency(txn.amount)}
@@ -98,9 +98,9 @@ export const RecentTransactions: React.FC<RecentTransactionsProps> = ({ accounts
       </div>
 
       {usingSample && (
-        <div className="px-5 py-3 bg-gray-50 border-t border-bank-border">
+        <div className="px-5 py-3 border-t border-bank-border bg-bank-bg/50 rounded-b-xl">
           <p className="text-xs text-bank-muted text-center">
-            Sample data shown. Make your first transaction to see real activity.
+            Sample data — make your first transaction to see real activity
           </p>
         </div>
       )}

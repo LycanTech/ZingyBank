@@ -36,12 +36,15 @@ export const AccountCard: React.FC<AccountCardProps> = ({ account }) => {
   return (
     <div
       onClick={() => navigate(`/accounts/${account.id}`)}
-      className="bg-white rounded-xl border border-bank-border border-l-4 border-l-zingy-600 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer p-5"
+      className="relative bg-bank-card rounded-xl border border-bank-border hover:border-zingy-800 card-glow-hover transition-all duration-200 cursor-pointer p-5 group overflow-hidden"
     >
+      {/* Top gradient accent line */}
+      <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-xl bg-linear-to-r from-zingy-600 to-sky-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-zingy-50 flex items-center justify-center">
-            <Icon className="w-5 h-5 text-zingy-600" />
+          <div className="w-10 h-10 rounded-xl bg-zingy-900 border border-zingy-800 flex items-center justify-center group-hover:bg-zingy-800 transition-colors">
+            <Icon className="w-5 h-5 text-zingy-400" />
           </div>
           <div>
             <p className="text-sm font-semibold text-bank-text">
@@ -53,8 +56,8 @@ export const AccountCard: React.FC<AccountCardProps> = ({ account }) => {
         <Badge status={statusLower}>{account.status.replace(/_/g, ' ')}</Badge>
       </div>
 
-      <p className="text-2xl font-bold text-bank-text">{formatCurrency(account.balance)}</p>
-      <p className="text-xs text-bank-muted mt-1">{account.currency}</p>
+      <p className="text-2xl font-bold gradient-text">{formatCurrency(account.balance)}</p>
+      <p className="text-xs text-bank-muted mt-1 uppercase tracking-wider">{account.currency}</p>
     </div>
   );
 };

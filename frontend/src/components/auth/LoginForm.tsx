@@ -42,8 +42,8 @@ export const LoginForm: React.FC = () => {
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-bank-text">Welcome back</h1>
-        <p className="text-bank-muted mt-1">Sign in to your ZingyBank account</p>
+        <h1 className="text-3xl font-bold gradient-text">Welcome back</h1>
+        <p className="text-bank-muted mt-2">Sign in to your ZingyBank account</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -87,7 +87,7 @@ export const LoginForm: React.FC = () => {
 
       <p className="mt-6 text-center text-sm text-bank-muted">
         Don&apos;t have an account?{' '}
-        <Link to="/register" className="text-zingy-600 font-semibold hover:text-zingy-700 transition-colors">
+        <Link to="/register" className="text-zingy-400 font-semibold hover:text-zingy-300 transition-colors">
           Register
         </Link>
       </p>

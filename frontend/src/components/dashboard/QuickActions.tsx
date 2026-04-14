@@ -8,18 +8,21 @@ const actions = [
     description: 'Send money between accounts or to others',
     icon: ArrowLeftRight,
     to: '/transfer',
+    gradient: 'from-zingy-600 to-indigo-600',
   },
   {
     title: 'Pay Bills',
     description: 'Make bill and utility payments easily',
     icon: Receipt,
     to: '/payments',
+    gradient: 'from-sky-500 to-cyan-600',
   },
   {
     title: 'View Statements',
     description: 'Download and review your statements',
     icon: FileText,
     to: '/statements',
+    gradient: 'from-violet-500 to-purple-700',
   },
 ];
 
@@ -30,10 +33,13 @@ export const QuickActions: React.FC = () => {
         <Link
           key={action.to}
           to={action.to}
-          className="bg-white rounded-xl border border-bank-border shadow-sm p-5 hover:shadow-md transition-shadow duration-200 group"
+          className="relative bg-bank-card rounded-xl border border-bank-border hover:border-zingy-800 card-glow-hover transition-all duration-200 group overflow-hidden p-5"
         >
-          <div className="w-11 h-11 rounded-full bg-zingy-50 flex items-center justify-center mb-3 group-hover:bg-zingy-100 transition-colors">
-            <action.icon className="w-5 h-5 text-zingy-600" />
+          {/* Subtle background glow */}
+          <div className={`absolute -top-6 -right-6 w-24 h-24 rounded-full bg-linear-to-br ${action.gradient} opacity-5 group-hover:opacity-10 transition-opacity`} />
+
+          <div className={`w-11 h-11 rounded-xl bg-linear-to-br ${action.gradient} flex items-center justify-center mb-3 shadow-[0_4px_12px_rgba(147,51,234,0.25)]`}>
+            <action.icon className="w-5 h-5 text-white" />
           </div>
           <h3 className="text-sm font-semibold text-bank-text mb-0.5">{action.title}</h3>
           <p className="text-xs text-bank-muted">{action.description}</p>

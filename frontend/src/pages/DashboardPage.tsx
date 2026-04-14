@@ -22,16 +22,16 @@ const DashboardPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="h-8 bg-gray-200 rounded w-64 animate-pulse" />
-        <div className="h-24 bg-gray-200 rounded-xl animate-pulse" />
+        <div className="h-8 bg-bank-border rounded w-64 animate-pulse" />
+        <div className="h-24 bg-bank-border rounded-xl animate-pulse" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-36 bg-gray-200 rounded-xl animate-pulse" />
+            <div key={i} className="h-36 bg-bank-border rounded-xl animate-pulse" />
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="h-72 bg-gray-200 rounded-xl animate-pulse" />
-          <div className="h-72 bg-gray-200 rounded-xl animate-pulse" />
+          <div className="h-72 bg-bank-border rounded-xl animate-pulse" />
+          <div className="h-72 bg-bank-border rounded-xl animate-pulse" />
         </div>
       </div>
     );
@@ -43,7 +43,7 @@ const DashboardPage: React.FC = () => {
     <div className="space-y-6">
       {/* Greeting */}
       <div>
-        <h1 className="text-2xl font-bold text-bank-text">
+        <h1 className="text-2xl font-bold gradient-text">
           {getGreeting()}, {firstName || 'there'}
         </h1>
         <p className="text-sm text-bank-muted mt-0.5">
@@ -57,7 +57,7 @@ const DashboardPage: React.FC = () => {
       {/* Account tiles */}
       {accountList.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-bank-text mb-3">Your Accounts</h2>
+          <h2 className="text-base font-semibold text-bank-muted uppercase tracking-wider mb-3">Your Accounts</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {accountList.map((account) => (
               <AccountCard key={account.id} account={account} />

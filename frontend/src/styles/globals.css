@@ -1,33 +1,34 @@
 @import "tailwindcss";
 
 @theme {
-  /* ZingyBank Red/White Theme */
-  --color-zingy-50: #fef2f2;
-  --color-zingy-100: #fee2e2;
-  --color-zingy-200: #fecaca;
-  --color-zingy-300: #fca5a5;
-  --color-zingy-400: #f87171;
-  --color-zingy-500: #ef4444;
-  --color-zingy-600: #dc2626;
-  --color-zingy-700: #b91c1c;
-  --color-zingy-800: #991b1b;
-  --color-zingy-900: #7f1d1d;
-  --color-zingy-950: #450a0a;
+  /* ZingyBank — Dark Purple Theme */
+  --color-zingy-50:  #faf5ff;
+  --color-zingy-100: #f3e8ff;
+  --color-zingy-200: #e9d5ff;
+  --color-zingy-300: #d8b4fe;
+  --color-zingy-400: #c084fc;
+  --color-zingy-500: #a855f7;
+  --color-zingy-600: #9333ea;
+  --color-zingy-700: #7e22ce;
+  --color-zingy-800: #2d1f5e;
+  --color-zingy-900: #1a1035;
+  --color-zingy-950: #0d0820;
 
-  --color-bank-bg: #f8f9fa;
-  --color-bank-card: #ffffff;
-  --color-bank-border: #e5e7eb;
-  --color-bank-text: #1f2937;
-  --color-bank-muted: #6b7280;
+  /* Dark surface system */
+  --color-bank-bg:     #0d0f1a;
+  --color-bank-card:   #141625;
+  --color-bank-border: #1e2440;
+  --color-bank-text:   #e2e8f0;
+  --color-bank-muted:  #64748b;
 
-  --color-success: #16a34a;
-  --color-warning: #d97706;
-  --color-danger: #dc2626;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger:  #ef4444;
 
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* Base styles */
+/* Base */
 body {
   font-family: var(--font-sans);
   background-color: var(--color-bank-bg);
@@ -37,17 +38,45 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
+/* Gradient text utility */
+.gradient-text {
+  background: linear-gradient(135deg, #c084fc 0%, #818cf8 50%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
+
+/* Card glow utility */
+.card-glow {
+  box-shadow:
+    0 0 0 1px rgba(147, 51, 234, 0.1),
+    0 4px 24px rgba(147, 51, 234, 0.08);
 }
-::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 3px;
+.card-glow-hover:hover {
+  box-shadow:
+    0 0 0 1px rgba(147, 51, 234, 0.2),
+    0 8px 32px rgba(147, 51, 234, 0.15);
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+
+/* Gradient border left accent */
+.border-gradient-left {
+  border-left: 3px solid transparent;
+  background-image: linear-gradient(var(--color-bank-card), var(--color-bank-card)),
+    linear-gradient(180deg, #9333ea, #38bdf8);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
 }
+
+/* Login page grid overlay */
+.login-grid-overlay {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.8) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.8) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2d1f5e; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #4c1d95; }

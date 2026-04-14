@@ -8,6 +8,7 @@ interface CardProps {
     title: string;
     action?: React.ReactNode;
   };
+  glow?: boolean;
 }
 
 const paddingClasses: Record<string, string> = {
@@ -22,10 +23,11 @@ export const Card: React.FC<CardProps> = ({
   className = '',
   padding = 'md',
   header,
+  glow = false,
 }) => {
   return (
     <div
-      className={`bg-bank-card rounded-xl shadow-sm border border-bank-border ${className}`}
+      className={`bg-bank-card rounded-xl border border-bank-border ${glow ? 'card-glow' : 'shadow-sm'} ${className}`}
     >
       {header && (
         <div className="flex items-center justify-between px-5 py-4 border-b border-bank-border">

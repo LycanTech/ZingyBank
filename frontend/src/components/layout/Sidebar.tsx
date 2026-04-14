@@ -40,17 +40,19 @@ export const Sidebar: React.FC = () => {
       {/* Logo */}
       <div className="flex items-center h-16 px-4 border-b border-zingy-800">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="flex-shrink-0 w-9 h-9 bg-white rounded-lg flex items-center justify-center">
-            <span className="text-zingy-600 font-bold text-xl">Z</span>
+          <div className="shrink-0 w-9 h-9 bg-linear-to-br from-zingy-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-[0_0_12px_rgba(147,51,234,0.4)]">
+            <span className="text-white font-bold text-xl">Z</span>
           </div>
           {!sidebarCollapsed && (
-            <span className="text-lg font-bold tracking-tight whitespace-nowrap">
+            <span className="text-lg font-bold tracking-tight whitespace-nowrap gradient-text">
               ZingyBank
             </span>
           )}
         </div>
         {/* Mobile close button */}
         <button
+          type="button"
+          title="Close menu"
           onClick={() => setMobileMenu(false)}
           className="ml-auto p-1 rounded-lg hover:bg-zingy-800 md:hidden"
         >
@@ -73,7 +75,7 @@ export const Sidebar: React.FC = () => {
               }`
             }
           >
-            <item.icon className="w-5 h-5 flex-shrink-0" />
+            <item.icon className="w-5 h-5 shrink-0" />
             {!sidebarCollapsed && <span>{item.label}</span>}
           </NavLink>
         ))}
@@ -98,7 +100,7 @@ export const Sidebar: React.FC = () => {
               }`
             }
           >
-            <Activity className="w-5 h-5 flex-shrink-0" />
+            <Activity className="w-5 h-5 shrink-0" />
             {!sidebarCollapsed && <span>Monitoring</span>}
           </NavLink>
         </div>
@@ -107,6 +109,7 @@ export const Sidebar: React.FC = () => {
       {/* Collapse toggle - desktop only */}
       <div className="hidden md:block p-2 border-t border-zingy-800">
         <button
+          type="button"
           onClick={toggleSidebar}
           className="flex items-center justify-center w-full px-3 py-2 rounded-lg text-zingy-200 hover:bg-zingy-800 hover:text-white transition-colors duration-150"
         >
