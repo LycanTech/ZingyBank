@@ -115,27 +115,82 @@ doc = SimpleDocTemplate(
 
 def cover_page(canvas, doc):
     canvas.saveState()
-    # Very dark navy background
+    cx = PAGE_W / 2
+
+    # ── Background ──────────────────────────────────────────────────────────
     canvas.setFillColor(ZINGY_DARK)
     canvas.rect(0, 0, PAGE_W, PAGE_H, fill=1, stroke=0)
-    # Subtle dark-navy mid-section overlay for depth
-    canvas.setFillColor(colors.HexColor("#130D2A"))
-    canvas.rect(0, PAGE_H*0.3, PAGE_W, PAGE_H*0.45, fill=1, stroke=0)
-    # Purple accent bar (top)
+
+    # Subtle gradient panel — darker lower half (no overlap with text zone)
+    canvas.setFillColor(colors.HexColor("#0A0818"))
+    canvas.rect(0, 0, PAGE_W, PAGE_H * 0.28, fill=1, stroke=0)
+
+    # Left violet stripe
+    canvas.setFillColor(ZINGY_VIOLET)
+    canvas.rect(0, 0, 0.45*cm, PAGE_H, fill=1, stroke=0)
+
+    # ── Top accent bar ───────────────────────────────────────────────────────
     canvas.setFillColor(ZINGY_PURPLE)
-    canvas.rect(0, PAGE_H - 0.55*cm, PAGE_W, 0.55*cm, fill=1, stroke=0)
-    # Purple accent bar (mid)
+    canvas.rect(0, PAGE_H - 0.7*cm, PAGE_W, 0.7*cm, fill=1, stroke=0)
+    canvas.setFillColor(WHITE)
+    canvas.setFont("Helvetica-Bold", 9)
+    canvas.drawString(MARGIN + 0.6*cm, PAGE_H - 0.45*cm, "ZingyBank  |  Full Retail Banking Platform")
+    canvas.setFont("Helvetica", 9)
+    canvas.setFillColor(colors.HexColor("#C4B5FD"))
+    canvas.drawRightString(PAGE_W - MARGIN, PAGE_H - 0.45*cm, "April 2025")
+
+    # ── Logo circle ──────────────────────────────────────────────────────────
+    logo_y = PAGE_H * 0.62
     canvas.setFillColor(ZINGY_VIOLET)
-    canvas.rect(0, PAGE_H*0.52, PAGE_W, 4, fill=1, stroke=0)
-    # Violet left-side stripe
-    canvas.setFillColor(ZINGY_VIOLET)
-    canvas.rect(0, 0, 0.4*cm, PAGE_H, fill=1, stroke=0)
-    # Bottom strip
+    canvas.circle(cx, logo_y, 1.6*cm, fill=1, stroke=0)
+    canvas.setFillColor(WHITE)
+    canvas.setFont("Helvetica-Bold", 32)
+    canvas.drawCentredString(cx, logo_y - 0.4*cm, "Z")
+
+    # ── Title ────────────────────────────────────────────────────────────────
+    canvas.setFillColor(WHITE)
+    canvas.setFont("Helvetica-Bold", 46)
+    canvas.drawCentredString(cx, PAGE_H * 0.47, "ZingyBank")
+
+    # Purple underline below title
+    canvas.setFillColor(ZINGY_PURPLE)
+    canvas.rect(cx - 5*cm, PAGE_H * 0.455, 10*cm, 0.12*cm, fill=1, stroke=0)
+
+    # ── Subtitle ─────────────────────────────────────────────────────────────
+    canvas.setFillColor(colors.HexColor("#C4B5FD"))
+    canvas.setFont("Helvetica", 16)
+    canvas.drawCentredString(cx, PAGE_H * 0.405, "Full Retail Banking Platform")
+
+    # ── Tech stack line ───────────────────────────────────────────────────────
+    canvas.setFillColor(colors.HexColor("#94A3B8"))
+    canvas.setFont("Helvetica-Oblique", 11)
+    canvas.drawCentredString(cx, PAGE_H * 0.365,
+        "Java 21  ·  Spring Boot 3.4  ·  React 18  ·  Kubernetes  ·  Terraform")
+
+    # ── Feature pills ────────────────────────────────────────────────────────
+    pills = ["11 Microservices", "10 Databases", "Azure · AWS · GCP", "CI/CD · GitOps"]
+    pill_w, pill_h, gap = 3.8*cm, 0.7*cm, 0.5*cm
+    total = len(pills) * pill_w + (len(pills) - 1) * gap
+    pill_x = cx - total / 2
+    pill_y = PAGE_H * 0.29
+    for pill in pills:
+        canvas.setFillColor(ZINGY_NAVY)
+        canvas.roundRect(pill_x, pill_y, pill_w, pill_h, 0.2*cm, fill=1, stroke=0)
+        canvas.setStrokeColor(ZINGY_VIOLET)
+        canvas.setLineWidth(0.5)
+        canvas.roundRect(pill_x, pill_y, pill_w, pill_h, 0.2*cm, fill=0, stroke=1)
+        canvas.setFillColor(colors.HexColor("#C4B5FD"))
+        canvas.setFont("Helvetica", 8.5)
+        canvas.drawCentredString(pill_x + pill_w / 2, pill_y + 0.2*cm, pill)
+        pill_x += pill_w + gap
+
+    # ── Bottom strip ─────────────────────────────────────────────────────────
     canvas.setFillColor(ZINGY_NAVY)
     canvas.rect(0, 0, PAGE_W, 1.2*cm, fill=1, stroke=0)
     canvas.setFillColor(colors.HexColor("#C4B5FD"))
     canvas.setFont("Helvetica", 8)
-    canvas.drawCentredString(PAGE_W/2, 0.45*cm, "CONFIDENTIAL — FOR INTERNAL USE ONLY")
+    canvas.drawCentredString(cx, 0.45*cm, "CONFIDENTIAL — FOR INTERNAL USE ONLY")
+
     canvas.restoreState()
 
 def normal_page(canvas, doc):
@@ -163,16 +218,8 @@ def normal_page(canvas, doc):
 story = []
 
 # ══════════════════════════════════════════════════════════════════════════════
-# COVER
+# COVER — drawn entirely on canvas; story just forces a page break
 # ══════════════════════════════════════════════════════════════════════════════
-story.append(Spacer(1, 5.5*cm))
-story.append(Paragraph("ZingyBank", cover_title))
-story.append(Paragraph("Full Retail Banking Platform", cover_sub))
-story.append(sp(8))
-story.append(Paragraph("Production-grade microservices banking system", cover_tag))
-story.append(Paragraph("Java 21 · Spring Boot 3.4 · React 18 · Kubernetes · Terraform", cover_tag))
-story.append(sp(30))
-story.append(Paragraph("Technical Project Overview  |  April 2025", cover_tag))
 story.append(PageBreak())
 
 # ══════════════════════════════════════════════════════════════════════════════
