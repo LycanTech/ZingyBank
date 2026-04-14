@@ -14,7 +14,7 @@ export const AccountSummaryBar: React.FC<AccountSummaryBarProps> = ({ accounts }
     <div className="bg-bank-card rounded-xl border border-bank-border overflow-hidden card-glow">
       <div className="flex items-center gap-6 px-6 py-5">
         {/* Gradient left accent */}
-        <div className="w-1 self-stretch rounded-full bg-linear-to-b from-zingy-500 to-sky-400 shrink-0" />
+        <div className="w-1 self-stretch rounded-full bg-linear-to-b from-zingy-500 to-amber-500 shrink-0" />
         <div className="flex-1">
           <p className="text-xs font-semibold text-bank-muted uppercase tracking-wider mb-1">
             Total Portfolio Balance

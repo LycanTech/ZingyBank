@@ -33,7 +33,7 @@ export const TopBar: React.FC = () => {
         </button>
 
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-zingy-500 to-indigo-600 text-white flex items-center justify-center text-sm font-semibold shadow-[0_0_12px_rgba(147,51,234,0.4)]">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-zingy-600 to-red-900 text-white flex items-center justify-center text-sm font-semibold shadow-[0_0_12px_rgba(190,18,60,0.4)]">
             {initials}
           </div>
           <span className="hidden sm:block text-sm font-medium text-bank-text">

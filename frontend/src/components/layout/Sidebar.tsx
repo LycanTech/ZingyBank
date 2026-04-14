@@ -40,7 +40,7 @@ export const Sidebar: React.FC = () => {
       {/* Logo */}
       <div className="flex items-center h-16 px-4 border-b border-zingy-800">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="shrink-0 w-9 h-9 bg-linear-to-br from-zingy-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-[0_0_12px_rgba(147,51,234,0.4)]">
+          <div className="shrink-0 w-9 h-9 bg-linear-to-br from-zingy-600 to-red-900 rounded-lg flex items-center justify-center shadow-[0_0_12px_rgba(190,18,60,0.4)]">
             <span className="text-white font-bold text-xl">Z</span>
           </div>
           {!sidebarCollapsed && (

@@ -40,8 +40,8 @@ export const SpendingChart: React.FC = () => {
           <AreaChart data={mockData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
             <defs>
               <linearGradient id="balanceGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#a855f7" stopOpacity={0.35} />
-                <stop offset="100%" stopColor="#a855f7" stopOpacity={0} />
+                <stop offset="0%" stopColor="#e11d48" stopOpacity={0.35} />
+                <stop offset="100%" stopColor="#e11d48" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#1e2440" vertical={false} />
@@ -73,7 +73,7 @@ export const SpendingChart: React.FC = () => {
             <Area
               type="monotone"
               dataKey="balance"
-              stroke="#a855f7"
+              stroke="#e11d48"
               strokeWidth={2}
               fill="url(#balanceGradient)"
             />

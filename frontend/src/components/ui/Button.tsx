@@ -10,7 +10,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<string, string> = {
   primary:
-    'bg-gradient-to-r from-zingy-600 to-indigo-600 hover:from-zingy-500 hover:to-indigo-500 text-white shadow-[0_0_16px_rgba(147,51,234,0.3)] hover:shadow-[0_0_20px_rgba(147,51,234,0.5)] focus:ring-zingy-500',
+    'bg-gradient-to-r from-zingy-600 to-red-900 hover:from-zingy-500 hover:to-red-800 text-white shadow-[0_0_16px_rgba(190,18,60,0.3)] hover:shadow-[0_0_20px_rgba(190,18,60,0.5)] focus:ring-zingy-500',
   secondary:
     'bg-bank-border hover:bg-zingy-900 text-bank-text focus:ring-zingy-500',
   outline:

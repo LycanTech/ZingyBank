@@ -1,20 +1,22 @@
 @import "tailwindcss";
 
 @theme {
-  /* ZingyBank — Dark Purple Theme */
-  --color-zingy-50:  #faf5ff;
-  --color-zingy-100: #f3e8ff;
-  --color-zingy-200: #e9d5ff;
-  --color-zingy-300: #d8b4fe;
-  --color-zingy-400: #c084fc;
-  --color-zingy-500: #a855f7;
-  --color-zingy-600: #9333ea;
-  --color-zingy-700: #7e22ce;
-  --color-zingy-800: #2d1f5e;
-  --color-zingy-900: #1a1035;
-  --color-zingy-950: #0d0820;
+  /* ZingyBank — Dark Red / Burgundy Theme
+     Template: dark navy surfaces, per-project accent = red/crimson/burgundy
+  */
+  --color-zingy-50:  #fff1f2;
+  --color-zingy-100: #ffe4e6;
+  --color-zingy-200: #fecdd3;
+  --color-zingy-300: #fda4af;
+  --color-zingy-400: #fb7185;
+  --color-zingy-500: #f43f5e;
+  --color-zingy-600: #e11d48;
+  --color-zingy-700: #be123c;
+  --color-zingy-800: #4a1020;  /* dark burgundy — sidebar hover / borders */
+  --color-zingy-900: #1c0a12;  /* very dark wine — sidebar bg */
+  --color-zingy-950: #0d0509;
 
-  /* Dark surface system */
+  /* Dark surface system — unchanged across all projects */
   --color-bank-bg:     #0d0f1a;
   --color-bank-card:   #141625;
   --color-bank-border: #1e2440;
@@ -38,33 +40,24 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Gradient text utility */
+/* Gradient text — rose-300 → red-600 → rose-800 */
 .gradient-text {
-  background: linear-gradient(135deg, #c084fc 0%, #818cf8 50%, #38bdf8 100%);
+  background: linear-gradient(135deg, #fda4af 0%, #e11d48 55%, #9f1239 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Card glow utility */
+/* Card glow — red-tinted */
 .card-glow {
   box-shadow:
-    0 0 0 1px rgba(147, 51, 234, 0.1),
-    0 4px 24px rgba(147, 51, 234, 0.08);
+    0 0 0 1px rgba(190, 18, 60, 0.12),
+    0 4px 24px rgba(190, 18, 60, 0.08);
 }
 .card-glow-hover:hover {
   box-shadow:
-    0 0 0 1px rgba(147, 51, 234, 0.2),
-    0 8px 32px rgba(147, 51, 234, 0.15);
-}
-
-/* Gradient border left accent */
-.border-gradient-left {
-  border-left: 3px solid transparent;
-  background-image: linear-gradient(var(--color-bank-card), var(--color-bank-card)),
-    linear-gradient(180deg, #9333ea, #38bdf8);
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
+    0 0 0 1px rgba(190, 18, 60, 0.22),
+    0 8px 32px rgba(190, 18, 60, 0.16);
 }
 
 /* Login page grid overlay */
@@ -78,5 +71,5 @@ body {
 /* Scrollbar */
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #2d1f5e; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #4c1d95; }
+::-webkit-scrollbar-thumb { background: #4a1020; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #7f1d2e; }

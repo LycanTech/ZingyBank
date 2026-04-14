@@ -39,7 +39,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({ account }) => {
       className="relative bg-bank-card rounded-xl border border-bank-border hover:border-zingy-800 card-glow-hover transition-all duration-200 cursor-pointer p-5 group overflow-hidden"
     >
       {/* Top gradient accent line */}
-      <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-xl bg-linear-to-r from-zingy-600 to-sky-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+      <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-xl bg-linear-to-r from-zingy-500 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
 
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">

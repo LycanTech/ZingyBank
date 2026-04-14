@@ -7,19 +7,19 @@ const LoginPage: React.FC = () => {
       {/* Left panel — branding */}
       <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center overflow-hidden">
         {/* Background gradient */}
-        <div className="absolute inset-0 bg-linear-to-br from-zingy-950 via-[#160d2e] to-[#0a0f2e]" />
+        <div className="absolute inset-0 bg-linear-to-br from-zingy-950 via-[#1a0810] to-[#0a0f2e]" />
 
         {/* Decorative orbs */}
-        <div className="absolute top-[-8%] right-[-8%] w-96 h-96 rounded-full bg-zingy-600/20 blur-3xl" />
-        <div className="absolute bottom-[-12%] left-[-8%] w-80 h-80 rounded-full bg-sky-500/15 blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-zingy-700/10 blur-3xl" />
+        <div className="absolute top-[-8%] right-[-8%] w-96 h-96 rounded-full bg-zingy-700/20 blur-3xl" />
+        <div className="absolute bottom-[-12%] left-[-8%] w-80 h-80 rounded-full bg-amber-600/10 blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-zingy-800/15 blur-3xl" />
 
         {/* Grid pattern overlay */}
         <div className="absolute inset-0 opacity-[0.03] login-grid-overlay" />
 
         <div className="relative z-10 text-center px-8">
           {/* Logo */}
-          <div className="w-24 h-24 rounded-2xl bg-linear-to-br from-zingy-500 to-indigo-600 flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(147,51,234,0.5)]">
+          <div className="w-24 h-24 rounded-2xl bg-linear-to-br from-zingy-600 to-red-900 flex items-center justify-center mx-auto mb-8 shadow-[0_0_40px_rgba(190,18,60,0.5)]">
             <span className="text-white font-bold text-5xl">Z</span>
           </div>
 
@@ -45,7 +45,7 @@ const LoginPage: React.FC = () => {
       <div className="w-full lg:w-1/2 flex flex-col bg-bank-card">
         {/* Mobile header */}
         <div className="lg:hidden px-6 py-4 flex items-center gap-3 border-b border-bank-border">
-          <div className="w-9 h-9 rounded-lg bg-linear-to-br from-zingy-500 to-indigo-600 flex items-center justify-center">
+          <div className="w-9 h-9 rounded-lg bg-linear-to-br from-zingy-600 to-red-900 flex items-center justify-center">
             <span className="text-white font-bold text-xl">Z</span>
           </div>
           <span className="text-lg font-bold gradient-text">ZingyBank</span>

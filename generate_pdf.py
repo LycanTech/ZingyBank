@@ -11,15 +11,15 @@ from reportlab.platypus.flowables import BalancedColumns
 import os
 
 # ── Colours ───────────────────────────────────────────────────────────────────
-ZINGY_PURPLE = colors.HexColor("#9333EA")   # primary accent
-ZINGY_VIOLET = colors.HexColor("#7C3AED")   # deeper purple
+ZINGY_PURPLE = colors.HexColor("#E11D48")   # primary accent — crimson/rose-600
+ZINGY_VIOLET = colors.HexColor("#BE123C")   # deeper — rose-700 / burgundy
 ZINGY_DARK   = colors.HexColor("#0D0F1A")   # cover bg (very dark navy)
-ZINGY_NAVY   = colors.HexColor("#1A1035")   # sidebar/table-header bg
+ZINGY_NAVY   = colors.HexColor("#1C0A12")   # sidebar/table-header bg (dark wine)
 ZINGY_MID    = colors.HexColor("#334155")   # body text
-ZINGY_LIGHT  = colors.HexColor("#F5F3FF")   # subtle purple tint for alt rows
+ZINGY_LIGHT  = colors.HexColor("#FFF1F2")   # subtle rose tint for alt rows
 ZINGY_GRAY   = colors.HexColor("#64748B")   # muted text / captions
 WHITE        = colors.white
-# Keep legacy aliases so table/section code still works unchanged
+# Legacy aliases
 ZINGY_RED    = ZINGY_PURPLE
 ZINGY_ACCENT = ZINGY_VIOLET
 
@@ -34,21 +34,21 @@ def S(name, **kw):
     return ParagraphStyle(name, **kw)
 
 cover_title   = S("CoverTitle",   fontName="Helvetica-Bold",   fontSize=38, textColor=WHITE,                            alignment=TA_CENTER, spaceAfter=6)
-cover_sub     = S("CoverSub",     fontName="Helvetica",        fontSize=16, textColor=colors.HexColor("#C4B5FD"),      alignment=TA_CENTER, spaceAfter=4)
+cover_sub     = S("CoverSub",     fontName="Helvetica",        fontSize=16, textColor=colors.HexColor("#FDA4AF"),      alignment=TA_CENTER, spaceAfter=4)
 cover_tag     = S("CoverTag",     fontName="Helvetica-Oblique",fontSize=11, textColor=colors.HexColor("#94A3B8"),      alignment=TA_CENTER)
-h1            = S("H1",           fontName="Helvetica-Bold",   fontSize=18, textColor=colors.HexColor("#1E1B4B"),     spaceBefore=14, spaceAfter=6)
+h1            = S("H1",           fontName="Helvetica-Bold",   fontSize=18, textColor=colors.HexColor("#1C0A12"),     spaceBefore=14, spaceAfter=6)
 h2            = S("H2",           fontName="Helvetica-Bold",   fontSize=13, textColor=ZINGY_PURPLE,                   spaceBefore=10, spaceAfter=4)
 h3            = S("H3",           fontName="Helvetica-Bold",   fontSize=11, textColor=ZINGY_MID,                      spaceBefore=6,  spaceAfter=3)
 body          = S("Body",         fontName="Helvetica",        fontSize=10, textColor=ZINGY_MID,                      leading=15, alignment=TA_JUSTIFY, spaceAfter=4)
 bullet        = S("Bullet",       fontName="Helvetica",        fontSize=10, textColor=ZINGY_MID,                      leading=14, leftIndent=14, spaceAfter=2)
-code_s        = S("Code",         fontName="Courier",          fontSize=8,  textColor=colors.HexColor("#1E1B4B"),     backColor=colors.HexColor("#EDE9FE"), leftIndent=10, rightIndent=10, leading=12, spaceAfter=4)
+code_s        = S("Code",         fontName="Courier",          fontSize=8,  textColor=colors.HexColor("#1C0A12"),     backColor=colors.HexColor("#FFF1F2"), leftIndent=10, rightIndent=10, leading=12, spaceAfter=4)
 caption       = S("Caption",      fontName="Helvetica-Oblique",fontSize=8,  textColor=ZINGY_GRAY,                     alignment=TA_CENTER, spaceAfter=6)
 toc_entry     = S("TOC",          fontName="Helvetica",        fontSize=11, textColor=ZINGY_MID,                      leading=18, leftIndent=10)
 
 PAGE_W, PAGE_H = A4
 MARGIN = 2*cm
 
-def hr(): return HRFlowable(width="100%", thickness=1, color=colors.HexColor("#DDD6FE"), spaceAfter=8, spaceBefore=4)
+def hr(): return HRFlowable(width="100%", thickness=1, color=colors.HexColor("#FECDD3"), spaceAfter=8, spaceBefore=4)
 def red_hr(): return HRFlowable(width="100%", thickness=2.5, color=ZINGY_PURPLE, spaceAfter=10, spaceBefore=4)
 def sp(n=6): return Spacer(1, n)
 
@@ -95,7 +95,7 @@ def table(headers, rows, col_widths=None):
     t.setStyle(TableStyle([
         ("BACKGROUND",    (0,0), (-1,0),  ZINGY_NAVY),
         ("ROWBACKGROUNDS",(0,1), (-1,-1), [WHITE, colors.HexColor("#F5F3FF")]),
-        ("GRID",          (0,0), (-1,-1), 0.4, colors.HexColor("#DDD6FE")),
+        ("GRID",          (0,0), (-1,-1), 0.4, colors.HexColor("#FECDD3")),
         ("TOPPADDING",    (0,0), (-1,-1), 5),
         ("BOTTOMPADDING", (0,0), (-1,-1), 5),
         ("LEFTPADDING",   (0,0), (-1,-1), 6),
@@ -122,7 +122,7 @@ def cover_page(canvas, doc):
     canvas.rect(0, 0, PAGE_W, PAGE_H, fill=1, stroke=0)
 
     # Subtle gradient panel — darker lower half (no overlap with text zone)
-    canvas.setFillColor(colors.HexColor("#0A0818"))
+    canvas.setFillColor(colors.HexColor("#0A0509"))
     canvas.rect(0, 0, PAGE_W, PAGE_H * 0.28, fill=1, stroke=0)
 
     # Left violet stripe
@@ -136,7 +136,7 @@ def cover_page(canvas, doc):
     canvas.setFont("Helvetica-Bold", 9)
     canvas.drawString(MARGIN + 0.6*cm, PAGE_H - 0.45*cm, "ZingyBank  |  Full Retail Banking Platform")
     canvas.setFont("Helvetica", 9)
-    canvas.setFillColor(colors.HexColor("#C4B5FD"))
+    canvas.setFillColor(colors.HexColor("#FDA4AF"))
     canvas.drawRightString(PAGE_W - MARGIN, PAGE_H - 0.45*cm, "April 2025")
 
     # ── Logo circle ──────────────────────────────────────────────────────────
@@ -157,7 +157,7 @@ def cover_page(canvas, doc):
     canvas.rect(cx - 5*cm, PAGE_H * 0.455, 10*cm, 0.12*cm, fill=1, stroke=0)
 
     # ── Subtitle ─────────────────────────────────────────────────────────────
-    canvas.setFillColor(colors.HexColor("#C4B5FD"))
+    canvas.setFillColor(colors.HexColor("#FDA4AF"))
     canvas.setFont("Helvetica", 16)
     canvas.drawCentredString(cx, PAGE_H * 0.405, "Full Retail Banking Platform")
 
@@ -179,7 +179,7 @@ def cover_page(canvas, doc):
         canvas.setStrokeColor(ZINGY_VIOLET)
         canvas.setLineWidth(0.5)
         canvas.roundRect(pill_x, pill_y, pill_w, pill_h, 0.2*cm, fill=0, stroke=1)
-        canvas.setFillColor(colors.HexColor("#C4B5FD"))
+        canvas.setFillColor(colors.HexColor("#FDA4AF"))
         canvas.setFont("Helvetica", 8.5)
         canvas.drawCentredString(pill_x + pill_w / 2, pill_y + 0.2*cm, pill)
         pill_x += pill_w + gap
@@ -187,7 +187,7 @@ def cover_page(canvas, doc):
     # ── Bottom strip ─────────────────────────────────────────────────────────
     canvas.setFillColor(ZINGY_NAVY)
     canvas.rect(0, 0, PAGE_W, 1.2*cm, fill=1, stroke=0)
-    canvas.setFillColor(colors.HexColor("#C4B5FD"))
+    canvas.setFillColor(colors.HexColor("#FDA4AF"))
     canvas.setFont("Helvetica", 8)
     canvas.drawCentredString(cx, 0.45*cm, "CONFIDENTIAL — FOR INTERNAL USE ONLY")
 
@@ -205,7 +205,7 @@ def normal_page(canvas, doc):
     canvas.setFont("Helvetica-Bold", 8)
     canvas.drawString(MARGIN, PAGE_H - 0.65*cm, "ZingyBank — Full Retail Banking Platform")
     canvas.setFont("Helvetica", 8)
-    canvas.setFillColor(colors.HexColor("#C4B5FD"))
+    canvas.setFillColor(colors.HexColor("#FDA4AF"))
     canvas.drawRightString(PAGE_W - MARGIN, PAGE_H - 0.65*cm, f"Page {doc.page}")
     # Bottom bar — purple
     canvas.setFillColor(ZINGY_PURPLE)
