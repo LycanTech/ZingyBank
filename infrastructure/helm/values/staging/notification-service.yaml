@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/lycantech/zingybank/notification-service
-  tag: "main-ceca980"
+  tag: "main-f0e9a4a"
 service:
   port: 8088
 replicaCount: 2
