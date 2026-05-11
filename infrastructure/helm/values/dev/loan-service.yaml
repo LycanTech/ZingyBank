@@ -17,3 +17,20 @@ env:
   OTEL_SERVICE_NAME: loan-service
   VAULT_ADDR: http://vault:8200
   KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+  initialDelaySeconds: 3
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
