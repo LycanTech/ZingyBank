@@ -157,6 +157,7 @@ A production-grade retail banking platform built with **Java 21 + Spring Boot 3.
 | Tool | Purpose | Status |
 |------|---------|--------|
 | **Git / GitHub** | Source control, branch protection, PR reviews | ✅ Implemented |
+| **Azure DevOps** | Enterprise CI/CD — 6-stage pipeline with approval gates | ✅ Implemented |
 | **Docker** | Containerize all services — multi-stage Maven builds | ✅ Implemented |
 | **Kubernetes** | Orchestration — AKS, EKS, or any conformant cluster | ✅ Implemented |
 | **Terraform** | Infrastructure as Code — Azure + AWS modules | ✅ Implemented |
@@ -488,6 +489,107 @@ ZingyBank/
 ---
 
 ## CI/CD Pipeline
+
+ZingyBank uses **two parallel pipelines**: Azure DevOps (enterprise, primary) and GitHub Actions (cloud-agnostic, secondary).
+
+---
+
+### Azure DevOps Pipeline (Enterprise — Primary)
+
+**File:** [`azure-pipelines.yml`](azure-pipelines.yml)
+
+```
+Branch push
+    │
+    ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│  Stage 1 · Build & Test                                              │
+│  Maven verify (11 services, 6 parallel) + React type-check + build  │
+└──────────────────────────┬───────────────────────────────────────────┘
+                           │ succeeded
+                           ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│  Stage 2 · Security Scan                                             │
+│  Trivy filesystem scan (CRITICAL/HIGH) + SonarQube (optional)       │
+└──────────────────────────┬───────────────────────────────────────────┘
+                           │ succeeded + branch in [dev|staging|main]
+                           ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│  Stage 3 · Docker Build & Push → Azure ACR                          │
+│  11 microservices + frontend   tag: <branch>-<sha>                  │
+└──────┬─────────────────┬─────────────────────────────────────────────┘
+       │                 │
+   dev branch        staging / main branch
+       │                 │
+       ▼                 ▼
+┌────────────┐   ┌────────────────────┐
+│  Stage 4   │   │     Stage 5        │
+│  Deploy    │   │  Deploy → Staging  │
+│  → Dev     │   │  (automatic)       │
+│  (auto)    │   │  smoke test        │
+└────────────┘   └─────────┬──────────┘
+                            │  main branch + succeeded
+                            ▼
+                 ┌──────────────────────────────────────────┐
+                 │  Stage 6 · Deploy → Production           │
+                 │  ⛩  MANUAL APPROVAL GATE                 │
+                 │  Pipeline pauses — approvers notified     │
+                 │  Approvers: Tech Lead + Eng Manager       │
+                 │  Timeout: 1 day                           │
+                 └──────────────────────────────────────────┘
+```
+
+#### Branch Strategy
+
+| Branch | Auto-deploys to | Approval required |
+|--------|----------------|-------------------|
+| `dev` | Dev environment | None — every commit auto-deploys |
+| `staging` | Staging environment | None — auto on push |
+| `main` | Staging → Production | **Yes — production gate** |
+
+#### Azure DevOps Setup (one-time)
+
+**1. Create Environments** (`Pipelines → Environments → New`):
+
+| Environment | Approval checks |
+|-------------|-----------------|
+| `zingybank-dev` | None |
+| `zingybank-staging` | Optional — add for extra governance |
+| `zingybank-production` | **Required** — Approvals & Checks → Approvals → add Tech Lead + Eng Manager |
+
+**2. Create Service Connections** (`Project Settings → Service connections`):
+
+| Name | Type |
+|------|------|
+| `azure-service-connection` | Azure Resource Manager (subscription scope) |
+| `azure-acr-service-connection` | Docker Registry → Azure Container Registry |
+
+**3. Create Variable Groups** (`Pipelines → Library`):
+
+| Group | Variables |
+|-------|-----------|
+| `zingybank-dev-vars` | `AKS_RESOURCE_GROUP`, `AKS_CLUSTER_NAME` |
+| `zingybank-staging-vars` | `AKS_RESOURCE_GROUP`, `AKS_CLUSTER_NAME` |
+| `zingybank-prod-vars` | `AKS_RESOURCE_GROUP`, `AKS_CLUSTER_NAME` |
+
+**4. Register the pipeline** (`Pipelines → New Pipeline → Azure Repos Git → select repo → Existing YAML → azure-pipelines.yml`)
+
+#### Configuring the Production Approval Gate
+
+```
+Azure DevOps → Pipelines → Environments → zingybank-production
+  → Approvals & Checks → + → Approvals
+  → Approvers: [Tech Lead, Engineering Manager]
+  → Instructions: "Verify staging smoke tests and change advisory"
+  → Timeout: 1 day
+  → Notify on pending: enabled
+```
+
+---
+
+### GitHub Actions Pipeline (Cloud-Agnostic — Secondary)
+
+**Files:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) · [`.github/workflows/cd.yml`](.github/workflows/cd.yml)
 
 ```
 ┌─────────┐    ┌────────────────┐    ┌──────────────┐    ┌──────────────────────────┐

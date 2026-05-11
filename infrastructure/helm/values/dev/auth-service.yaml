@@ -1,0 +1,18 @@
+image:
+  repository: zingybank.azurecr.io/zingybank/auth-service
+  tag: "dev-latest"
+service:
+  port: 8081
+replicaCount: 1
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 250m
+    memory: 512Mi
+env:
+  SPRING_PROFILES_ACTIVE: dev
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+  OTEL_SERVICE_NAME: auth-service
+  VAULT_ADDR: http://vault:8200
