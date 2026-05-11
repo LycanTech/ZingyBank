@@ -16,20 +16,14 @@ env:
   OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
   OTEL_SERVICE_NAME: auth-service
   VAULT_ADDR: http://vault:8200
-livenessProbe:
-  httpGet:
-    path: /
-    port: http
-  initialDelaySeconds: 5
-  periodSeconds: 10
-  timeoutSeconds: 3
-  failureThreshold: 3
+podSecurityContext:
+  runAsNonRoot: false
+  runAsUser: 0
 
-readinessProbe:
-  httpGet:
-    path: /
-    port: http
-  initialDelaySeconds: 3
-  periodSeconds: 5
-  timeoutSeconds: 3
-  failureThreshold: 3
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  runAsNonRoot: false
+  capabilities:
+    drop:
+      - ALL
