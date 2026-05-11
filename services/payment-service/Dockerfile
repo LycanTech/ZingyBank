@@ -6,15 +6,11 @@ WORKDIR /build
 COPY pom.xml /build/parent-pom.xml
 COPY services/payment-service/pom.xml /build/pom.xml
 
-# Install parent POM and download dependencies (cached layer)
-RUN --mount=type=cache,target=/root/.m2 \
-    mvn install -f /build/parent-pom.xml -N -q && \
+RUN mvn install -f /build/parent-pom.xml -N -q && \
     mvn dependency:go-offline -q
 
-# Copy source and build
 COPY services/payment-service/src ./src
-RUN --mount=type=cache,target=/root/.m2 \
-    mvn package -DskipTests -q
+RUN mvn package -DskipTests -q
 
 # Stage 2: Runtime
 FROM eclipse-temurin:21-jre-alpine
