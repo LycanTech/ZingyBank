@@ -25,3 +25,4 @@ containerSecurityContext:
   allowPrivilegeEscalation: false
   readOnlyRootFilesystem: false
   runAsNonRoot: false
+  capabilities: {}
