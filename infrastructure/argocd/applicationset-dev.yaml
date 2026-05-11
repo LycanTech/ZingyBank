@@ -41,7 +41,7 @@ spec:
         path: infrastructure/helm/charts/base-service
         helm:
           valueFiles:
-            - ../../../values/dev/{{service}}.yaml
+            - ../../values/dev/{{service}}.yaml
       destination:
         server: https://kubernetes.default.svc
         namespace: zingybank-dev
