@@ -1,47 +1,50 @@
 image:
   repository: zingybankdev.azurecr.io/zingybank/loan-service
   tag: "dev-latest"
+  pullPolicy: Always
 service:
   port: 8085
 replicaCount: 1
 resources:
   requests:
-    cpu: 100m
-    memory: 256Mi
-  limits:
     cpu: 250m
     memory: 512Mi
+  limits:
+    cpu: 500m
+    memory: 768Mi
 env:
   SPRING_PROFILES_ACTIVE: dev
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://zingybank-postgres-dev.postgres.database.azure.com:5432/zingybank_loan?sslmode=require"
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
   OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
   OTEL_SERVICE_NAME: loan-service
-  VAULT_ADDR: http://vault:8200
-  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+secrets:
+  DB_USERNAME: from-secret
+  DB_PASSWORD: from-secret
 podSecurityContext:
   runAsNonRoot: false
   runAsUser: 0
-
 containerSecurityContext:
   allowPrivilegeEscalation: false
   readOnlyRootFilesystem: false
   runAsNonRoot: false
   capabilities:
     drop: []
-
 livenessProbe:
   httpGet:
-    path: /
-    port: 80
-  initialDelaySeconds: 5
-  periodSeconds: 10
-  timeoutSeconds: 3
+    path: /actuator/health/liveness
+    port: 8085
+  initialDelaySeconds: 90
+  periodSeconds: 15
+  timeoutSeconds: 5
   failureThreshold: 3
-
 readinessProbe:
   httpGet:
-    path: /
-    port: 80
-  initialDelaySeconds: 3
-  periodSeconds: 5
-  timeoutSeconds: 3
+    path: /actuator/health/readiness
+    port: 8085
+  initialDelaySeconds: 60
+  periodSeconds: 10
+  timeoutSeconds: 5
   failureThreshold: 3

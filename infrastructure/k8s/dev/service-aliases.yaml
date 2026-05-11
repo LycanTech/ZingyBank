@@ -1,0 +1,82 @@
+# ExternalName services so the api-gateway can resolve short names
+# (api-gateway.yml routes to http://auth-service:8081 etc.)
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: zingybank-dev
+spec:
+  type: ExternalName
+  externalName: zingybank-dev-auth-service.zingybank-dev.svc.cluster.local
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: account-service
+  namespace: zingybank-dev
+spec:
+  type: ExternalName
+  externalName: zingybank-dev-account-service.zingybank-dev.svc.cluster.local
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: transaction-service
+  namespace: zingybank-dev
+spec:
+  type: ExternalName
+  externalName: zingybank-dev-transaction-service.zingybank-dev.svc.cluster.local
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+  namespace: zingybank-dev
+spec:
+  type: ExternalName
+  externalName: zingybank-dev-payment-service.zingybank-dev.svc.cluster.local
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loan-service
+  namespace: zingybank-dev
+spec:
+  type: ExternalName
+  externalName: zingybank-dev-loan-service.zingybank-dev.svc.cluster.local
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: card-service
+  namespace: zingybank-dev
+spec:
+  type: ExternalName
+  externalName: zingybank-dev-card-service.zingybank-dev.svc.cluster.local
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kyc-service
+  namespace: zingybank-dev
+spec:
+  type: ExternalName
+  externalName: zingybank-dev-kyc-service.zingybank-dev.svc.cluster.local
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  namespace: zingybank-dev
+spec:
+  type: ExternalName
+  externalName: zingybank-dev-notification-service.zingybank-dev.svc.cluster.local
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: statement-service
+  namespace: zingybank-dev
+spec:
+  type: ExternalName
+  externalName: zingybank-dev-statement-service.zingybank-dev.svc.cluster.local
