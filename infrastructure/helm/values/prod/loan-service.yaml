@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/lycantech/zingybank/loan-service
-  tag: "main-ceca980"
+  tag: "main-f0e9a4a"
 service:
   port: 8085
 replicaCount: 3
