@@ -13,9 +13,9 @@ interface CardProps {
 
 const paddingClasses: Record<string, string> = {
   none: '',
-  sm: 'p-3',
-  md: 'p-5',
-  lg: 'p-7',
+  sm: 'p-4',
+  md: 'p-6',
+  lg: 'p-8',
 };
 
 export const Card: React.FC<CardProps> = ({
@@ -27,11 +27,11 @@ export const Card: React.FC<CardProps> = ({
 }) => {
   return (
     <div
-      className={`bg-bank-card rounded-xl border border-bank-border ${glow ? 'card-glow' : 'shadow-sm'} ${className}`}
+      className={`glass-surface rounded-2xl ${glow ? 'card-glow' : ''} ${className}`}
     >
       {header && (
-        <div className="flex items-center justify-between px-5 py-4 border-b border-bank-border">
-          <h3 className="text-lg font-semibold text-bank-text">{header.title}</h3>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.07]">
+          <h3 className="text-base font-semibold text-bank-text tracking-tight">{header.title}</h3>
           {header.action && <div>{header.action}</div>}
         </div>
       )}

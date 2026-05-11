@@ -16,39 +16,39 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-bank-text mb-1.5"
+            className="block text-sm font-medium text-bank-text/80 mb-2 tracking-tight"
           >
             {label}
           </label>
         )}
         <div className="relative">
           {icon && (
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-bank-muted">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-bank-muted">
               {icon}
             </div>
           )}
           <input
             ref={ref}
             id={inputId}
-            className={`block w-full rounded-lg border bg-bank-bg px-3 py-2.5 text-sm text-bank-text placeholder:text-bank-muted transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-zingy-500 focus:border-zingy-500 focus:bg-bank-card disabled:bg-bank-border/50 disabled:cursor-not-allowed ${
-              icon ? 'pl-10' : ''
+            className={`block w-full rounded-xl border bg-white/5 px-4 py-3 text-sm text-bank-text placeholder:text-bank-muted/50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-zingy-500/40 focus:border-zingy-500/60 focus:bg-white/[0.07] disabled:opacity-40 disabled:cursor-not-allowed ${
+              icon ? 'pl-11' : ''
             } ${
-              rightIcon ? 'pr-10' : ''
+              rightIcon ? 'pr-11' : ''
             } ${
               error
-                ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
-                : 'border-bank-border'
+                ? 'border-danger/40 focus:ring-danger/30 focus:border-danger/60'
+                : 'border-white/10'
             } ${className}`}
             {...props}
           />
           {rightIcon && (
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+            <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center">
               {rightIcon}
             </div>
           )}
         </div>
         {error && (
-          <p className="mt-1 text-sm text-red-400">{error}</p>
+          <p className="mt-1.5 text-sm text-danger/80">{error}</p>
         )}
       </div>
     );

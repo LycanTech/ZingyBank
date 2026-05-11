@@ -40,10 +40,10 @@ export const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold gradient-text">Welcome back</h1>
-        <p className="text-bank-muted mt-2">Sign in to your ZingyBank account</p>
+    <div className="w-full max-w-100 mx-auto">
+      <div className="mb-10">
+        <h1 className="text-4xl font-bold gradient-text tracking-tight">Welcome back</h1>
+        <p className="text-bank-muted mt-2 text-[15px]">Sign in to your ZingyBank account</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -51,7 +51,7 @@ export const LoginForm: React.FC = () => {
           label="Email Address"
           type="email"
           placeholder="you@example.com"
-          icon={<Mail className="w-5 h-5" />}
+          icon={<Mail className="w-4.5 h-4.5" />}
           error={errors.email?.message}
           {...register('email')}
         />
@@ -60,7 +60,7 @@ export const LoginForm: React.FC = () => {
           label="Password"
           type={showPassword ? 'text' : 'password'}
           placeholder="Enter your password"
-          icon={<Lock className="w-5 h-5" />}
+          icon={<Lock className="w-4.5 h-4.5" />}
           error={errors.password?.message}
           {...register('password')}
           rightIcon={
@@ -70,25 +70,27 @@ export const LoginForm: React.FC = () => {
               className="text-bank-muted hover:text-bank-text transition-colors"
               tabIndex={-1}
             >
-              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              {showPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
             </button>
           }
         />
 
-        <Button
-          type="submit"
-          className="w-full"
-          size="lg"
-          loading={loginMutation.isPending}
-        >
-          Sign In
-        </Button>
+        <div className="pt-1">
+          <Button
+            type="submit"
+            className="w-full"
+            size="lg"
+            loading={loginMutation.isPending}
+          >
+            Sign In
+          </Button>
+        </div>
       </form>
 
-      <p className="mt-6 text-center text-sm text-bank-muted">
+      <p className="mt-8 text-center text-sm text-bank-muted">
         Don&apos;t have an account?{' '}
         <Link to="/register" className="text-zingy-400 font-semibold hover:text-zingy-300 transition-colors">
-          Register
+          Create Account
         </Link>
       </p>
     </div>

@@ -18,15 +18,15 @@ const mobileNavItems = [
 
 export const MobileNav: React.FC = () => {
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-bank-border">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 glass-sidebar border-t border-white/6">
       <div className="flex items-center justify-around h-16">
         {mobileNavItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-xs font-medium transition-colors ${
-                isActive ? 'text-zingy-600' : 'text-bank-muted'
+              `flex flex-col items-center justify-center gap-1 flex-1 h-full text-[11px] font-medium transition-all duration-150 ${
+                isActive ? 'text-zingy-400' : 'text-white/40'
               }`
             }
           >
