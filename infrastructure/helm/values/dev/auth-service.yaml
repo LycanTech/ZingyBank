@@ -16,3 +16,14 @@ env:
   OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
   OTEL_SERVICE_NAME: auth-service
   VAULT_ADDR: http://vault:8200
+podSecurityContext:
+  runAsNonRoot: false
+  runAsUser: 0
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  runAsNonRoot: false
+  capabilities:
+    drop:
+      - ALL
