@@ -1,5 +1,5 @@
 image:
-  repository: zingybank.azurecr.io/zingybank/api-gateway
+  repository: zingybankdev.azurecr.io/zingybank/api-gateway
   tag: "dev-latest"
 service:
   port: 8080

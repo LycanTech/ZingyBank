@@ -1,5 +1,5 @@
 image:
-  repository: zingybank.azurecr.io/zingybank/loan-service
+  repository: zingybankdev.azurecr.io/zingybank/loan-service
   tag: "dev-latest"
 service:
   port: 8085

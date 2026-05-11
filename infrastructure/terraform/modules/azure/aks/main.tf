@@ -27,7 +27,7 @@ variable "aks_app_subnet_id" {
 
 variable "kubernetes_version" {
   type    = string
-  default = "1.32"
+  default = "1.33.10"
 }
 
 resource "azurerm_kubernetes_cluster" "main" {
@@ -40,14 +40,14 @@ resource "azurerm_kubernetes_cluster" "main" {
   # System node pool — runs Kubernetes system components
   default_node_pool {
     name                = "system"
-    node_count          = 2
-    vm_size             = "Standard_D2s_v5"
+    node_count          = 1
+    vm_size             = "Standard_D2s_v4"
     vnet_subnet_id      = var.aks_system_subnet_id
     os_disk_size_gb     = 50
     max_pods            = 30
     auto_scaling_enabled = true
-    min_count           = 2
-    max_count           = 4
+    min_count           = 1
+    max_count           = 3
 
     node_labels = {
       "nodepool-type" = "system"
@@ -97,13 +97,13 @@ resource "azurerm_kubernetes_cluster" "main" {
 resource "azurerm_kubernetes_cluster_node_pool" "app" {
   name                  = "app"
   kubernetes_cluster_id = azurerm_kubernetes_cluster.main.id
-  vm_size               = "Standard_D4s_v5"
+  vm_size               = "Standard_D4s_v4"
   vnet_subnet_id        = var.aks_app_subnet_id
   os_disk_size_gb       = 100
   max_pods              = 50
   auto_scaling_enabled   = true
-  min_count             = 2
-  max_count             = 10
+  min_count             = 1
+  max_count             = 5
 
   node_labels = {
     "nodepool-type" = "application"
