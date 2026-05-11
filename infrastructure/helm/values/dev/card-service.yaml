@@ -1,5 +1,5 @@
 image:
-  repository: zingybank.azurecr.io/zingybank/card-service
+  repository: zingybankdev.azurecr.io/zingybank/card-service
   tag: "dev-latest"
 service:
   port: 8086

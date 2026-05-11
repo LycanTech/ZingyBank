@@ -1,36 +1,40 @@
 @import "tailwindcss";
 
 @theme {
-  /* ZingyBank — Dark Red / Burgundy Theme
-     Template: dark navy surfaces, per-project accent = red/crimson/burgundy
+  /* ZingyBank — Apple Liquid Glass Theme
+     Dark space surfaces · Violet / Indigo / Fuchsia gradient accent
+     Inspired by Apple Intelligence, macOS Sequoia, iOS 18 Liquid Glass
   */
-  --color-zingy-50:  #fff1f2;
-  --color-zingy-100: #ffe4e6;
-  --color-zingy-200: #fecdd3;
-  --color-zingy-300: #fda4af;
-  --color-zingy-400: #fb7185;
-  --color-zingy-500: #f43f5e;
-  --color-zingy-600: #e11d48;
-  --color-zingy-700: #be123c;
-  --color-zingy-800: #4a1020;  /* dark burgundy — sidebar hover / borders */
-  --color-zingy-900: #1c0a12;  /* very dark wine — sidebar bg */
-  --color-zingy-950: #0d0509;
 
-  /* Dark surface system — unchanged across all projects */
-  --color-bank-bg:     #0d0f1a;
-  --color-bank-card:   #141625;
-  --color-bank-border: #1e2440;
-  --color-bank-text:   #e2e8f0;
-  --color-bank-muted:  #64748b;
+  /* Zingy accent — Violet → Purple → Fuchsia (Apple Intelligence palette) */
+  --color-zingy-50:  #f5f3ff;
+  --color-zingy-100: #ede9fe;
+  --color-zingy-200: #ddd6fe;
+  --color-zingy-300: #c4b5fd;   /* soft violet */
+  --color-zingy-400: #a78bfa;   /* medium violet */
+  --color-zingy-500: #8b5cf6;   /* violet — primary accent */
+  --color-zingy-600: #7c3aed;   /* deep violet */
+  --color-zingy-700: #6d28d9;   /* deeper violet */
+  --color-zingy-800: #2e1065;   /* very dark purple */
+  --color-zingy-900: #160a38;   /* near-black purple — sidebar base */
+  --color-zingy-950: #0b0520;   /* darkest */
 
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-danger:  #ef4444;
+  /* Apple dark surface system */
+  --color-bank-bg:     #07070F;   /* near-black, blue-tinted like Apple dark mode */
+  --color-bank-card:   #0e0e1e;   /* elevated surface */
+  --color-bank-border: #1b1b30;   /* subtle border */
+  --color-bank-text:   #F5F5F7;   /* Apple's primary white */
+  --color-bank-muted:  #86868B;   /* Apple's secondary grey */
 
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  /* Apple semantic colors */
+  --color-success: #30d158;   /* Apple green */
+  --color-warning: #ff9f0a;   /* Apple yellow */
+  --color-danger:  #ff453a;   /* Apple red */
+
+  --font-sans: 'Inter', -apple-system, 'SF Pro Display', BlinkMacSystemFont, system-ui, sans-serif;
 }
 
-/* Base */
+/* ─── Base ─────────────────────────────────────────────────────────────── */
 body {
   font-family: var(--font-sans);
   background-color: var(--color-bank-bg);
@@ -40,36 +44,77 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Gradient text — rose-300 → red-600 → rose-800 */
+/* ─── Gradient Text — violet → fuchsia (Apple Intelligence) ──────────── */
 .gradient-text {
-  background: linear-gradient(135deg, #fda4af 0%, #e11d48 55%, #9f1239 100%);
+  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 45%, #d946ef 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Card glow — red-tinted */
+/* ─── Glassmorphism surfaces ────────────────────────────────────────────── */
+
+/* Default glass — cards, panels */
+.glass-surface {
+  background: rgba(255, 255, 255, 0.045);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+/* Sidebar — more opaque, deep purple tint */
+.glass-sidebar {
+  background: rgba(10, 8, 28, 0.90);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  backdrop-filter: blur(32px) saturate(200%);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ─── Card Glow — violet tint ──────────────────────────────────────────── */
 .card-glow {
   box-shadow:
-    0 0 0 1px rgba(190, 18, 60, 0.12),
-    0 4px 24px rgba(190, 18, 60, 0.08);
+    0 0 0 1px rgba(139, 92, 246, 0.12),
+    0 4px 32px rgba(139, 92, 246, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.05) inset;
 }
+
+.card-glow-hover {
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
 .card-glow-hover:hover {
   box-shadow:
-    0 0 0 1px rgba(190, 18, 60, 0.22),
-    0 8px 32px rgba(190, 18, 60, 0.16);
+    0 0 0 1px rgba(139, 92, 246, 0.22),
+    0 12px 48px rgba(139, 92, 246, 0.15),
+    0 1px 0 rgba(255, 255, 255, 0.08) inset;
+  transform: translateY(-2px);
 }
 
-/* Login page grid overlay */
+/* ─── Apple Aurora background — login hero panel ──────────────────────── */
+.apple-aurora-bg {
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(99, 102, 241, 0.40) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 80%, rgba(217, 70, 239, 0.30) 0%, transparent 55%),
+    radial-gradient(ellipse at 58% 28%, rgba(139, 92, 246, 0.24) 0%, transparent 50%),
+    radial-gradient(ellipse at 30% 72%, rgba(79, 70, 229, 0.18) 0%, transparent 50%);
+}
+
+/* ─── Login grid overlay ────────────────────────────────────────────────── */
 .login-grid-overlay {
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.8) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.8) 1px, transparent 1px);
-  background-size: 40px 40px;
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
 }
 
-/* Scrollbar */
+/* ─── Scrollbar ─────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #4a1020; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #7f1d2e; }
+::-webkit-scrollbar-thumb { background: #2e1065; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #6d28d9; }
+
+/* ─── Selection ─────────────────────────────────────────────────────────── */
+::selection {
+  background: rgba(139, 92, 246, 0.30);
+  color: #F5F5F7;
+}

@@ -1,5 +1,5 @@
 image:
-  repository: zingybank.azurecr.io/zingybank/notification-service
+  repository: zingybankdev.azurecr.io/zingybank/notification-service
   tag: "dev-latest"
 service:
   port: 8088

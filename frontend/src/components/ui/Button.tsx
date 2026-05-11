@@ -10,21 +10,21 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<string, string> = {
   primary:
-    'bg-gradient-to-r from-zingy-600 to-red-900 hover:from-zingy-500 hover:to-red-800 text-white shadow-[0_0_16px_rgba(190,18,60,0.3)] hover:shadow-[0_0_20px_rgba(190,18,60,0.5)] focus:ring-zingy-500',
+    'bg-gradient-to-r from-violet-600 via-zingy-500 to-fuchsia-500 hover:from-violet-500 hover:via-zingy-400 hover:to-fuchsia-400 text-white shadow-[0_4px_20px_rgba(139,92,246,0.40)] hover:shadow-[0_6px_32px_rgba(139,92,246,0.55)] focus:ring-zingy-500',
   secondary:
-    'bg-bank-border hover:bg-zingy-900 text-bank-text focus:ring-zingy-500',
+    'bg-white/[0.07] border border-white/[0.12] hover:bg-white/[0.11] text-bank-text focus:ring-zingy-500',
   outline:
-    'border border-bank-border hover:bg-bank-border text-bank-text focus:ring-zingy-500',
+    'border border-white/[0.15] hover:bg-white/[0.07] text-bank-text focus:ring-zingy-500',
   ghost:
-    'hover:bg-bank-border text-bank-text focus:ring-zingy-500',
+    'hover:bg-white/[0.07] text-bank-text focus:ring-zingy-500',
   danger:
-    'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white focus:ring-red-500',
+    'bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-400 hover:to-rose-500 text-white shadow-[0_4px_16px_rgba(239,68,68,0.35)] hover:shadow-[0_6px_24px_rgba(239,68,68,0.45)] focus:ring-red-500',
 };
 
 const sizeClasses: Record<string, string> = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2 text-sm',
-  lg: 'px-6 py-3 text-base',
+  sm: 'px-3.5 py-2 text-sm',
+  md: 'px-5 py-2.5 text-sm',
+  lg: 'px-6 py-3.5 text-[15px]',
 };
 
 export const Button: React.FC<ButtonProps> = ({
@@ -38,7 +38,7 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   return (
     <button
-      className={`inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-bank-bg disabled:opacity-50 disabled:cursor-not-allowed ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      className={`inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-bank-bg disabled:opacity-40 disabled:cursor-not-allowed tracking-tight ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
       disabled={disabled || loading}
       {...props}
     >

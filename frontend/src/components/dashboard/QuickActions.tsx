@@ -5,24 +5,27 @@ import { ArrowLeftRight, Receipt, FileText } from 'lucide-react';
 const actions = [
   {
     title: 'Transfer Money',
-    description: 'Send money between accounts or to others',
+    description: 'Send funds instantly to any account',
     icon: ArrowLeftRight,
     to: '/transfer',
-    gradient: 'from-zingy-600 to-red-900',
+    gradient: 'from-violet-500 to-purple-600',
+    shadow: 'shadow-[0_6px_20px_rgba(139,92,246,0.35)]',
   },
   {
     title: 'Pay Bills',
-    description: 'Make bill and utility payments easily',
+    description: 'Manage bills and utility payments',
     icon: Receipt,
     to: '/payments',
-    gradient: 'from-amber-500 to-orange-700',
+    gradient: 'from-blue-500 to-indigo-600',
+    shadow: 'shadow-[0_6px_20px_rgba(99,102,241,0.35)]',
   },
   {
     title: 'View Statements',
     description: 'Download and review your statements',
     icon: FileText,
     to: '/statements',
-    gradient: 'from-zingy-700 to-rose-900',
+    gradient: 'from-fuchsia-500 to-pink-600',
+    shadow: 'shadow-[0_6px_20px_rgba(217,70,239,0.35)]',
   },
 ];
 
@@ -33,16 +36,23 @@ export const QuickActions: React.FC = () => {
         <Link
           key={action.to}
           to={action.to}
-          className="relative bg-bank-card rounded-xl border border-bank-border hover:border-zingy-800 card-glow-hover transition-all duration-200 group overflow-hidden p-5"
+          className="relative glass-surface rounded-2xl card-glow-hover group overflow-hidden p-6"
         >
-          {/* Subtle background glow */}
-          <div className={`absolute -top-6 -right-6 w-24 h-24 rounded-full bg-linear-to-br ${action.gradient} opacity-5 group-hover:opacity-10 transition-opacity`} />
+          {/* Corner glow orb */}
+          <div className={`absolute -top-8 -right-8 w-28 h-28 rounded-full bg-linear-to-br ${action.gradient} opacity-10 group-hover:opacity-20 transition-opacity duration-300 blur-xl`} />
 
-          <div className={`w-11 h-11 rounded-xl bg-linear-to-br ${action.gradient} flex items-center justify-center mb-3 shadow-[0_4px_12px_rgba(190,18,60,0.3)]`}>
+          {/* Icon */}
+          <div
+            className={`w-12 h-12 rounded-2xl bg-linear-to-br ${action.gradient} ${action.shadow} flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-200`}
+          >
             <action.icon className="w-5 h-5 text-white" />
           </div>
-          <h3 className="text-sm font-semibold text-bank-text mb-0.5">{action.title}</h3>
-          <p className="text-xs text-bank-muted">{action.description}</p>
+
+          <h3 className="text-sm font-semibold text-bank-text mb-1 tracking-tight">{action.title}</h3>
+          <p className="text-xs text-bank-muted leading-relaxed">{action.description}</p>
+
+          {/* Shimmer on hover */}
+          <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-linear-to-br from-white/4 to-transparent" />
         </Link>
       ))}
     </div>

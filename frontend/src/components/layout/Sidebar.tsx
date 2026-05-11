@@ -36,12 +36,12 @@ export const Sidebar: React.FC = () => {
   const isAdmin = roles.some((r) => adminRoles.includes(r));
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-zingy-900 text-white">
+    <div className="flex flex-col h-full glass-sidebar text-white">
       {/* Logo */}
-      <div className="flex items-center h-16 px-4 border-b border-zingy-800">
+      <div className="flex items-center h-16 px-4 border-b border-white/[0.06]">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="shrink-0 w-9 h-9 bg-linear-to-br from-zingy-600 to-red-900 rounded-lg flex items-center justify-center shadow-[0_0_12px_rgba(190,18,60,0.4)]">
-            <span className="text-white font-bold text-xl">Z</span>
+          <div className="shrink-0 w-9 h-9 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-xl flex items-center justify-center shadow-[0_0_16px_rgba(139,92,246,0.55)]">
+            <span className="text-white font-bold text-xl tracking-tight">Z</span>
           </div>
           {!sidebarCollapsed && (
             <span className="text-lg font-bold tracking-tight whitespace-nowrap gradient-text">
@@ -54,28 +54,28 @@ export const Sidebar: React.FC = () => {
           type="button"
           title="Close menu"
           onClick={() => setMobileMenu(false)}
-          className="ml-auto p-1 rounded-lg hover:bg-zingy-800 md:hidden"
+          className="ml-auto p-1.5 rounded-xl hover:bg-white/[0.08] text-white/60 hover:text-white transition-colors md:hidden"
         >
           <X className="w-5 h-5" />
         </button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
+      <nav className="flex-1 py-4 px-2.5 space-y-0.5 overflow-y-auto">
         {navItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             onClick={() => setMobileMenu(false)}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ${
+              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
                 isActive
-                  ? 'bg-zingy-700 text-white'
-                  : 'text-zingy-100 hover:bg-zingy-800 hover:text-white'
+                  ? 'bg-white/[0.10] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
+                  : 'text-white/55 hover:bg-white/[0.07] hover:text-white/90'
               }`
             }
           >
-            <item.icon className="w-5 h-5 shrink-0" />
+            <item.icon className="w-[18px] h-[18px] shrink-0" />
             {!sidebarCollapsed && <span>{item.label}</span>}
           </NavLink>
         ))}
@@ -83,9 +83,9 @@ export const Sidebar: React.FC = () => {
 
       {/* Observability section — admin/manager only */}
       {isAdmin && (
-        <div className="px-2 pb-2 border-t border-zingy-800 pt-3">
+        <div className="px-2.5 pb-2 border-t border-white/[0.06] pt-3">
           {!sidebarCollapsed && (
-            <p className="px-3 mb-1 text-xs font-semibold text-zingy-400 uppercase tracking-wider">
+            <p className="px-3 mb-1.5 text-[10px] font-semibold text-white/30 uppercase tracking-[0.12em]">
               Observability
             </p>
           )}
@@ -93,32 +93,32 @@ export const Sidebar: React.FC = () => {
             to="/observability"
             onClick={() => setMobileMenu(false)}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 ${
+              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
                 isActive
-                  ? 'bg-zingy-700 text-white'
-                  : 'text-zingy-100 hover:bg-zingy-800 hover:text-white'
+                  ? 'bg-white/[0.10] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
+                  : 'text-white/55 hover:bg-white/[0.07] hover:text-white/90'
               }`
             }
           >
-            <Activity className="w-5 h-5 shrink-0" />
+            <Activity className="w-[18px] h-[18px] shrink-0" />
             {!sidebarCollapsed && <span>Monitoring</span>}
           </NavLink>
         </div>
       )}
 
-      {/* Collapse toggle - desktop only */}
-      <div className="hidden md:block p-2 border-t border-zingy-800">
+      {/* Collapse toggle — desktop only */}
+      <div className="hidden md:block p-2.5 border-t border-white/[0.06]">
         <button
           type="button"
           onClick={toggleSidebar}
-          className="flex items-center justify-center w-full px-3 py-2 rounded-lg text-zingy-200 hover:bg-zingy-800 hover:text-white transition-colors duration-150"
+          className="flex items-center justify-center w-full px-3 py-2 rounded-xl text-white/40 hover:bg-white/[0.07] hover:text-white/80 transition-all duration-150"
         >
           {sidebarCollapsed ? (
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-4 h-4" />
           ) : (
             <>
-              <ChevronLeft className="w-5 h-5 mr-2" />
-              <span className="text-sm">Collapse</span>
+              <ChevronLeft className="w-4 h-4 mr-2" />
+              <span className="text-xs font-medium">Collapse</span>
             </>
           )}
         </button>

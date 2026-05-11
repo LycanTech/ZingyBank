@@ -1,5 +1,5 @@
 image:
-  repository: zingybank.azurecr.io/zingybank/transaction-service
+  repository: zingybankdev.azurecr.io/zingybank/transaction-service
   tag: "dev-latest"
 service:
   port: 8083

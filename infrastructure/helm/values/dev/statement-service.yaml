@@ -1,5 +1,5 @@
 image:
-  repository: zingybank.azurecr.io/zingybank/statement-service
+  repository: zingybankdev.azurecr.io/zingybank/statement-service
   tag: "dev-latest"
 service:
   port: 8089
