@@ -165,6 +165,7 @@ jobs:
     needs: build-and-test
     strategy:
       fail-fast: false
+      max-parallel: 3
       matrix:
         service:
           - api-gateway
@@ -184,7 +185,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Trivy filesystem scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.28.0
         with:
           scan-type: fs
           scan-ref: services/${{ matrix.service }}
@@ -194,7 +195,8 @@ jobs:
           exit-code: '0'
 
       - name: Upload Trivy results
-        if: always() && hashFiles('trivy-results-${{ matrix.service }}.sarif') != ''
+        if: always() && hashFiles(format('trivy-results-{0}.sarif', matrix.service)) != ''
+        continue-on-error: true
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-results-${{ matrix.service }}.sarif
