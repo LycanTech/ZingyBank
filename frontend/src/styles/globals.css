@@ -118,3 +118,27 @@ body {
   background: rgba(139, 92, 246, 0.30);
   color: #F5F5F7;
 }
+
+/* ─── Select / Dropdown options ──────────────────────────────────────────── */
+select {
+  background-color: #0e0e1e;
+  color: #F5F5F7;
+}
+
+select option {
+  background-color: #0e0e1e;
+  color: #F5F5F7;
+}
+
+/* Chrome/Edge: linear-gradient trick forces option hover background */
+select option:hover {
+  background: linear-gradient(#8b5cf6, #8b5cf6) !important;
+  background-color: #8b5cf6 !important;
+  color: #ffffff !important;
+}
+
+select option:checked {
+  background-color: #8b5cf6 !important;
+  background: linear-gradient(#8b5cf6, #8b5cf6) !important;
+  color: #ffffff !important;
+}
