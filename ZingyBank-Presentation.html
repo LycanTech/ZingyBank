@@ -1159,7 +1159,7 @@
       </div>
       <div class="k8s-item">
         <div class="ki-icon">📁</div>
-        <div><div class="ki-name">Namespaces: zingybank, monitoring, argocd</div><div class="ki-desc">Service isolation. Monitoring runs Prometheus + Grafana. ArgoCD manages all GitOps delivery.</div></div>
+        <div><div class="ki-name">Namespaces: zingybank-dev, argocd</div><div class="ki-desc">All 11 services + Prometheus + Grafana run in <code style="color:var(--accent);">zingybank-dev</code>. ArgoCD manages GitOps delivery from its own namespace.</div></div>
       </div>
       <div class="k8s-item">
         <div class="ki-icon">🚀</div>
@@ -1351,7 +1351,7 @@
   </div>
 
   <div style="font-size:7.5pt;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px;">
-    <span>All requests go through the API Gateway at <code style="color:var(--accent);">http://localhost:8080</code> (local) or the AKS Ingress IP (cloud). Base path: <code style="color:var(--accent);">/api</code></span>
+    <span>All requests go through the API Gateway at <code style="color:var(--accent);">http://localhost:8080</code> (local) or <code style="color:var(--accent);">http://72.153.114.15</code> (live AKS dev). Base path: <code style="color:var(--accent);">/api/v1</code></span>
     <span style="color:var(--accent);font-weight:700;white-space:nowrap;">🔒 = JWT required</span>
   </div>
 
@@ -1420,17 +1420,21 @@
       <!-- Quick start code block -->
       <div style="font-size:8pt;font-weight:700;color:var(--brand2);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Quick Start — Login &amp; Transfer</div>
       <div class="code-block" style="font-size:7pt;">
-<span class="c-comment"># 1. Login and capture token</span>
-TOKEN=$(curl -s -X POST localhost:8080/api/auth/login \
+<span class="c-comment"># 1. Login and capture token (field: accessToken)</span>
+TOKEN=$(curl -s -X POST http://72.153.114.15/api/v1/auth/login \
   -H <span class="c-string">"Content-Type: application/json"</span> \
-  -d <span class="c-string">'{"email":"admin@zingybank.test","password":"TestAdmin123!"}'</span> \
-  | python -c <span class="c-string">"import sys,json;print(json.load(sys.stdin)['token'])"</span>)
+  -d <span class="c-string">'{"email":"cheekway18@gmail.com","password":"ZingyAdmin@2026!"}'</span> \
+  | python -c <span class="c-string">"import sys,json;print(json.load(sys.stdin)['accessToken'])"</span>)
 
-<span class="c-comment"># 2. Transfer funds</span>
-curl -X POST localhost:8080/api/transactions/transfer \
+<span class="c-comment"># 2. Get accounts for user</span>
+curl http://72.153.114.15/api/v1/accounts/user/&lt;userId&gt; \
+  -H <span class="c-string">"Authorization: Bearer $TOKEN"</span>
+
+<span class="c-comment"># 3. Transfer funds</span>
+curl -X POST http://72.153.114.15/api/v1/transactions/transfer \
   -H <span class="c-string">"Authorization: Bearer $TOKEN"</span> \
   -H <span class="c-string">"Content-Type: application/json"</span> \
-  -d <span class="c-string">'{"fromAccountId":1,"toAccountId":2,"amount":500.00}'</span>
+  -d <span class="c-string">'{"sourceAccountNumber":"ZB123","destinationAccountNumber":"ZB456","amount":500.00,"currency":"USD","initiatedBy":"&lt;userId&gt;"}'</span>
       </div>
     </div>
   </div>
@@ -1454,6 +1458,7 @@ curl -X POST localhost:8080/api/transactions/transfer \
   <p>
     A complete, production-grade retail banking platform — from a dark-theme React SPA
     to 11 microservices deployed on Azure Kubernetes Service via a fully automated CI/CD pipeline.
+    Latest release: <strong style="color:var(--success);">v1.0.26</strong> — CI → Staging → Production, all services verified live.
   </p>
 
   <div class="closing-grid">
