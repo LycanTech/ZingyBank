@@ -7,6 +7,8 @@ spec:
   generators:
     - list:
         elements:
+          - service: frontend
+            port: "3000"
           - service: api-gateway
             port: "8080"
           - service: auth-service

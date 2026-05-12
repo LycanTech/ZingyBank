@@ -1,0 +1,426 @@
+# ============================================================
+# ZingyBank Dev — Prometheus + Grafana monitoring stack
+# Deployed in zingybank-dev namespace alongside services.
+# ArgoCD (zingybank-dev-infra app) auto-syncs this file.
+# Access: http://72.153.114.15/prometheus  and  /grafana
+# ============================================================
+
+# ── RBAC: allow Prometheus to discover pods/services ────────
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: zingybank-dev
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: zingybank-prometheus-reader
+rules:
+  - apiGroups: [""]
+    resources: [nodes, nodes/proxy, services, endpoints, pods]
+    verbs: [get, list, watch]
+  - nonResourceURLs: [/metrics]
+    verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: zingybank-prometheus-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: zingybank-prometheus-reader
+subjects:
+  - kind: ServiceAccount
+    name: prometheus
+    namespace: zingybank-dev
+
+# ── Prometheus scrape config ─────────────────────────────────
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: zingybank-dev
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+
+    scrape_configs:
+      - job_name: api-gateway
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['zingybank-dev-api-gateway:8080']
+            labels: {application: api-gateway}
+
+      - job_name: auth-service
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['zingybank-dev-auth-service:8081']
+            labels: {application: auth-service}
+
+      - job_name: account-service
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['zingybank-dev-account-service:8082']
+            labels: {application: account-service}
+
+      - job_name: transaction-service
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['zingybank-dev-transaction-service:8083']
+            labels: {application: transaction-service}
+
+      - job_name: payment-service
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['zingybank-dev-payment-service:8084']
+            labels: {application: payment-service}
+
+      - job_name: loan-service
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['zingybank-dev-loan-service:8085']
+            labels: {application: loan-service}
+
+      - job_name: card-service
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['zingybank-dev-card-service:8086']
+            labels: {application: card-service}
+
+      - job_name: kyc-service
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['zingybank-dev-kyc-service:8087']
+            labels: {application: kyc-service}
+
+      - job_name: notification-service
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['zingybank-dev-notification-service:8088']
+            labels: {application: notification-service}
+
+      - job_name: statement-service
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['zingybank-dev-statement-service:8089']
+            labels: {application: statement-service}
+
+      - job_name: audit-service
+        metrics_path: /actuator/prometheus
+        static_configs:
+          - targets: ['zingybank-dev-audit-service:8090']
+            labels: {application: audit-service}
+
+# ── Prometheus Deployment ────────────────────────────────────
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: zingybank-dev
+  labels:
+    app: prometheus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      serviceAccountName: prometheus
+      nodeSelector:
+        nodepool-type: application
+      securityContext:
+        runAsNonRoot: false
+        runAsUser: 0
+      containers:
+        - name: prometheus
+          image: prom/prometheus:v2.51.2
+          args:
+            - --config.file=/etc/prometheus/prometheus.yml
+            - --storage.tsdb.path=/prometheus
+            - --storage.tsdb.retention.time=7d
+            - --web.external-url=/prometheus/
+            - --web.route-prefix=/prometheus/
+          ports:
+            - containerPort: 9090
+          volumeMounts:
+            - name: config
+              mountPath: /etc/prometheus
+            - name: data
+              mountPath: /prometheus
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /prometheus/-/healthy
+              port: 9090
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /prometheus/-/ready
+              port: 9090
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: config
+          configMap:
+            name: prometheus-config
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: zingybank-dev
+spec:
+  selector:
+    app: prometheus
+  ports:
+    - port: 9090
+      targetPort: 9090
+
+# ── Grafana datasources provisioning ────────────────────────
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: zingybank-dev
+data:
+  datasources.yml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        uid: prometheus
+        access: proxy
+        url: http://prometheus:9090
+        isDefault: true
+        editable: true
+        jsonData:
+          timeInterval: "15s"
+          httpMethod: POST
+
+# ── Grafana dashboard provider provisioning ──────────────────
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards-provider
+  namespace: zingybank-dev
+data:
+  dashboards.yml: |
+    apiVersion: 1
+    providers:
+      - name: ZingyBank
+        orgId: 1
+        type: file
+        disableDeletion: false
+        updateIntervalSeconds: 30
+        allowUiUpdates: true
+        options:
+          path: /var/lib/grafana/dashboards
+
+# ── Grafana ZingyBank overview dashboard ────────────────────
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-zingybank
+  namespace: zingybank-dev
+data:
+  zingybank-overview.json: |
+    {
+      "uid": "zingybank-overview",
+      "title": "ZingyBank — Service Overview",
+      "tags": ["zingybank"],
+      "timezone": "browser",
+      "refresh": "15s",
+      "schemaVersion": 38,
+      "panels": [
+        {
+          "id": 1, "type": "stat", "title": "Services Up",
+          "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+          "datasource": { "uid": "prometheus" },
+          "targets": [{ "expr": "count(up{job=~\".+\"} == 1)", "legendFormat": "UP" }],
+          "options": { "colorMode": "background", "graphMode": "none" },
+          "fieldConfig": { "defaults": { "thresholds": { "steps": [
+            { "color": "red", "value": 0 }, { "color": "yellow", "value": 5 }, { "color": "green", "value": 10 }
+          ]}}}
+        },
+        {
+          "id": 2, "type": "stat", "title": "Total HTTP Requests (5m)",
+          "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+          "datasource": { "uid": "prometheus" },
+          "targets": [{ "expr": "sum(increase(http_server_requests_seconds_count{application=~\".*service|api-gateway\"}[5m]))", "legendFormat": "Requests" }],
+          "options": { "colorMode": "background", "graphMode": "area" },
+          "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "blue" }}}
+        },
+        {
+          "id": 3, "type": "stat", "title": "Error Rate (5m)",
+          "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+          "datasource": { "uid": "prometheus" },
+          "targets": [{ "expr": "sum(increase(http_server_requests_seconds_count{status=~\"5..\",application=~\".*service|api-gateway\"}[5m])) / sum(increase(http_server_requests_seconds_count{application=~\".*service|api-gateway\"}[5m])) * 100", "legendFormat": "Error %" }],
+          "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } },
+          "fieldConfig": { "defaults": { "unit": "percent", "thresholds": { "steps": [
+            { "color": "green", "value": 0 }, { "color": "yellow", "value": 1 }, { "color": "red", "value": 5 }
+          ]}}}
+        },
+        {
+          "id": 4, "type": "stat", "title": "P99 Latency",
+          "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+          "datasource": { "uid": "prometheus" },
+          "targets": [{ "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket{application=~\".*service|api-gateway\"}[5m])) by (le))", "legendFormat": "P99" }],
+          "options": { "colorMode": "background", "graphMode": "none" },
+          "fieldConfig": { "defaults": { "unit": "s", "thresholds": { "steps": [
+            { "color": "green", "value": 0 }, { "color": "yellow", "value": 1 }, { "color": "red", "value": 3 }
+          ]}}}
+        },
+        {
+          "id": 5, "type": "stat", "title": "Active JVM Threads",
+          "gridPos": { "x": 16, "y": 0, "w": 4, "h": 4 },
+          "datasource": { "uid": "prometheus" },
+          "targets": [{ "expr": "sum(jvm_threads_live_threads{application=~\".*service\"})", "legendFormat": "Threads" }],
+          "options": { "colorMode": "value", "graphMode": "none" },
+          "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "purple" }}}
+        },
+        {
+          "id": 6, "type": "timeseries", "title": "HTTP Request Rate by Service",
+          "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+          "datasource": { "uid": "prometheus" },
+          "targets": [{ "expr": "sum(rate(http_server_requests_seconds_count{application=~\".*service|api-gateway\"}[1m])) by (application)", "legendFormat": "{{application}}" }],
+          "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "lineWidth": 2 }}}
+        },
+        {
+          "id": 7, "type": "timeseries", "title": "HTTP Error Rate by Service",
+          "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+          "datasource": { "uid": "prometheus" },
+          "targets": [{ "expr": "sum(rate(http_server_requests_seconds_count{status=~\"5..\",application=~\".*service|api-gateway\"}[1m])) by (application)", "legendFormat": "{{application}}" }],
+          "fieldConfig": { "defaults": { "unit": "reqps", "color": { "mode": "palette-classic" }, "custom": { "lineWidth": 2 }}}
+        },
+        {
+          "id": 8, "type": "timeseries", "title": "JVM Heap Usage by Service",
+          "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
+          "datasource": { "uid": "prometheus" },
+          "targets": [{ "expr": "jvm_memory_used_bytes{area=\"heap\",application=~\".*service\"}", "legendFormat": "{{application}}" }],
+          "fieldConfig": { "defaults": { "unit": "bytes", "custom": { "lineWidth": 2 }}}
+        },
+        {
+          "id": 9, "type": "timeseries", "title": "Request Latency P95 by Service",
+          "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+          "datasource": { "uid": "prometheus" },
+          "targets": [{ "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{application=~\".*service|api-gateway\"}[5m])) by (le, application))", "legendFormat": "{{application}}" }],
+          "fieldConfig": { "defaults": { "unit": "s", "custom": { "lineWidth": 2 }}}
+        }
+      ],
+      "time": { "from": "now-1h", "to": "now" }
+    }
+
+# ── Grafana Deployment ───────────────────────────────────────
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: zingybank-dev
+  labels:
+    app: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      nodeSelector:
+        nodepool-type: application
+      securityContext:
+        runAsNonRoot: false
+        runAsUser: 0
+      containers:
+        - name: grafana
+          image: grafana/grafana:10.4.2
+          env:
+            - name: GF_SERVER_ROOT_URL
+              value: "%(protocol)s://%(domain)s/grafana/"
+            - name: GF_SERVER_SERVE_FROM_SUB_PATH
+              value: "true"
+            - name: GF_SECURITY_ADMIN_USER
+              value: "admin"
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              value: "ZingyGrafana@2026"
+            - name: GF_AUTH_ANONYMOUS_ENABLED
+              value: "true"
+            - name: GF_AUTH_ANONYMOUS_ORG_ROLE
+              value: "Viewer"
+            - name: GF_USERS_ALLOW_SIGN_UP
+              value: "false"
+          ports:
+            - containerPort: 3000
+          volumeMounts:
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources
+            - name: dashboards-provider
+              mountPath: /etc/grafana/provisioning/dashboards
+            - name: dashboards
+              mountPath: /var/lib/grafana/dashboards
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /grafana/api/health
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /grafana/api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: datasources
+          configMap:
+            name: grafana-datasources
+        - name: dashboards-provider
+          configMap:
+            name: grafana-dashboards-provider
+        - name: dashboards
+          configMap:
+            name: grafana-dashboard-zingybank
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: zingybank-dev
+spec:
+  selector:
+    app: grafana
+  ports:
+    - port: 3000
+      targetPort: 3000

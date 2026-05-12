@@ -1,19 +1,52 @@
 image:
   repository: zingybankdev.azurecr.io/zingybank/audit-service
   tag: "dev-latest"
+  pullPolicy: Always
 service:
   port: 8090
 replicaCount: 1
 resources:
   requests:
-    cpu: 100m
-    memory: 256Mi
-  limits:
     cpu: 250m
     memory: 512Mi
+  limits:
+    cpu: 500m
+    memory: 768Mi
 env:
   SPRING_PROFILES_ACTIVE: dev
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://zingybank-postgres-dev.postgres.database.azure.com:5432/zingybank_audit?sslmode=require"
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  SPRING_KAFKA_CONSUMER_AUTO_STARTUP: "false"
+  SPRING_KAFKA_LISTENER_AUTO_STARTUP: "false"
   OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
   OTEL_SERVICE_NAME: audit-service
-  VAULT_ADDR: http://vault:8200
-  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+secrets:
+  DB_USERNAME: from-secret
+  DB_PASSWORD: from-secret
+podSecurityContext:
+  runAsNonRoot: false
+  runAsUser: 0
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  runAsNonRoot: false
+  capabilities:
+    drop: []
+livenessProbe:
+  httpGet:
+    path: /actuator/health/liveness
+    port: 8090
+  initialDelaySeconds: 90
+  periodSeconds: 15
+  timeoutSeconds: 5
+  failureThreshold: 3
+readinessProbe:
+  httpGet:
+    path: /actuator/health/readiness
+    port: 8090
+  initialDelaySeconds: 60
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3

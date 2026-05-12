@@ -37,27 +37,47 @@ A production-grade retail banking platform built with **Java 21 + Spring Boot 3.
 | **statement-service** | http://localhost:8089/swagger-ui.html |
 | **audit-service** | http://localhost:8090/swagger-ui.html |
 
-### AKS (Azure Kubernetes Service)
+### Dev Environment — Live on Azure (AKS)
 
-> Replace `<INGRESS-IP>` with the external IP from:
+> **Ingress IP:** `72.153.114.15` — Azure Kubernetes Service, `zingybank-dev` namespace  
+> All 11 Spring Boot microservices + React frontend deployed and running.
+
+| App | Live URL | Notes |
+|-----|----------|-------|
+| **Frontend** | http://72.153.114.15 | React SPA — register to get started |
+| **API Gateway** | http://72.153.114.15/api | Entry point for all REST calls |
+| **Grafana** | http://72.153.114.15/grafana | `admin` / `ZingyGrafana@2026` |
+| **Grafana — ZingyBank Overview** | http://72.153.114.15/grafana/d/zingybank-overview | Service metrics dashboard |
+| **Prometheus** | http://72.153.114.15/prometheus | Scrapes all 11 service `/actuator/prometheus` |
+| **ArgoCD** | `kubectl port-forward svc/argocd-server -n argocd 8080:443` | GitOps sync — tracks `dev` branch |
+
+> **Register a test user:**
 > ```bash
-> kubectl get svc -n zingybank-ingress ingress-nginx-controller
+> curl -X POST http://72.153.114.15/api/v1/auth/register \
+>   -H "Content-Type: application/json" \
+>   -d '{"firstName":"Test","lastName":"User","email":"you@example.com","password":"Test@Pass123","phoneNumber":"+2348012345678"}'
 > ```
 
-| App | URL |
-|-----|-----|
-| **Frontend** | http://`<INGRESS-IP>` or https://zingybank.example.com |
-| **API** | http://`<INGRESS-IP>`/api or https://api.zingybank.example.com |
-| **Grafana** | https://monitoring.zingybank.example.com/grafana |
-| **Prometheus** | https://monitoring.zingybank.example.com/prometheus |
-| **Jaeger** | https://monitoring.zingybank.example.com/jaeger |
-| **ArgoCD** | `kubectl port-forward svc/argocd-server -n argocd 8080:443` → http://localhost:8080 |
-
-> **Get ArgoCD password:**
+> **Get ArgoCD admin password:**
 > ```bash
 > kubectl get secret argocd-initial-admin-secret -n argocd \
 >   -o jsonpath="{.data.password}" | base64 -d
 > ```
+
+### AKS (Generic — any environment)
+
+> Replace `<INGRESS-IP>` with the external IP from:
+> ```bash
+> kubectl get svc -n ingress-nginx ingress-nginx-controller
+> ```
+
+| App | URL |
+|-----|-----|
+| **Frontend** | http://`<INGRESS-IP>` |
+| **API** | http://`<INGRESS-IP>`/api |
+| **Grafana** | http://`<INGRESS-IP>`/grafana |
+| **Prometheus** | http://`<INGRESS-IP>`/prometheus |
+| **ArgoCD** | `kubectl port-forward svc/argocd-server -n argocd 8080:443` → http://localhost:8080 |
 
 ---
 

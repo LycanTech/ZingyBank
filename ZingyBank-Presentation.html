@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZingyBank — Project Presentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    /* =====================================================
+       DESIGN TOKENS — ZingyBank Red / Burgundy Theme
+    ===================================================== */
+    :root {
+      --brand:   #e11d48;               /* rose-600  / crimson      */
+      --brand2:  #be123c;               /* rose-700  / burgundy     */
+      --accent:  #f59e0b;               /* amber-500 / warm gold    */
+      --dark:    #0f0f1a;               /* very dark navy           */
+      --card:    #1a1a2e;               /* dark card surface        */
+      --muted:   #9d9dbf;               /* muted text               */
+      --border:  rgba(225, 29, 72, 0.28);
+      --success: #22c55e;
+      --danger:  #ef4444;
+      --info:    #3b82f6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0a12;
+      color: #e8e8f5;
+      line-height: 1.6;
+    }
+
+    /* =====================================================
+       SLIDE CONTAINER — one A4 landscape page each
+    ===================================================== */
+    .slide {
+      width: 297mm;
+      min-height: 210mm;
+      margin: 0 auto 6mm;
+      background: var(--dark);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 14mm 18mm;
+      page-break-after: always;
+      break-after: page;
+    }
+
+    /* Subtle red grid on every slide */
+    .slide::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(225,29,72,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(225,29,72,0.04) 1px, transparent 1px);
+      background-size: 30px 30px;
+      pointer-events: none;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(70px);
+      pointer-events: none;
+    }
+
+    .slide-num {
+      position: absolute;
+      bottom: 8mm;
+      right: 14mm;
+      font-size: 8pt;
+      color: var(--muted);
+      opacity: 0.6;
+    }
+
+    .slide-brand {
+      position: absolute;
+      bottom: 8mm;
+      left: 14mm;
+      font-size: 8pt;
+      color: var(--muted);
+      opacity: 0.6;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .slide-brand span { font-weight: 700; color: var(--brand2); }
+
+    /* =====================================================
+       TYPOGRAPHY
+    ===================================================== */
+    .grad-text {
+      background: linear-gradient(90deg, var(--brand), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .grad-text-2 {
+      background: linear-gradient(90deg, #fff 20%, var(--brand2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .label {
+      font-size: 8pt;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--brand2);
+    }
+
+    /* =====================================================
+       COVER SLIDE
+    ===================================================== */
+    .cover {
+      justify-content: center;
+      align-items: flex-start;
+      background: radial-gradient(ellipse 80% 60% at 70% 40%, rgba(225,29,72,0.15) 0%, transparent 70%),
+                  var(--dark);
+    }
+
+    .cover-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      background: rgba(225,29,72,0.08);
+      border-radius: 30px;
+      padding: 5px 16px;
+      font-size: 9pt;
+      font-weight: 600;
+      color: var(--brand2);
+      margin-bottom: 22px;
+      letter-spacing: 0.5px;
+    }
+
+    .cover h1 {
+      font-size: 46pt;
+      font-weight: 900;
+      line-height: 1.0;
+      letter-spacing: -2px;
+      margin-bottom: 18px;
+    }
+
+    .cover-subtitle {
+      font-size: 13pt;
+      color: var(--muted);
+      max-width: 130mm;
+      line-height: 1.7;
+      margin-bottom: 30px;
+    }
+
+    .cover-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 36px;
+    }
+
+    .tag {
+      border: 1px solid var(--border);
+      background: rgba(225,29,72,0.08);
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 8.5pt;
+      font-weight: 600;
+      color: var(--brand2);
+    }
+
+    .cover-meta { display: flex; gap: 40px; }
+    .meta-item  { display: flex; flex-direction: column; gap: 3px; }
+    .meta-label { font-size: 7.5pt; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+    .meta-value { font-size: 10pt; font-weight: 700; }
+
+    .cover-deco {
+      position: absolute;
+      right: 18mm;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 120pt;
+      opacity: 0.06;
+      line-height: 1;
+      filter: blur(1px);
+      pointer-events: none;
+    }
+
+    /* =====================================================
+       SLIDE HEADER
+    ===================================================== */
+    .slide-header { margin-bottom: 10mm; }
+    .slide-header .label { margin-bottom: 5px; }
+    .slide-header h2 {
+      font-size: 22pt;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.5px;
+    }
+    .divider {
+      width: 40px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--brand), var(--brand2));
+      border-radius: 2px;
+      margin-top: 8px;
+    }
+
+    /* =====================================================
+       CARDS
+    ===================================================== */
+    .card     { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 18px; }
+    .card-sm  { padding: 10px 14px; border-radius: 10px; }
+
+    /* =====================================================
+       GRID HELPERS
+    ===================================================== */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr;             gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr;         gap: 10px; }
+    .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;     gap: 10px; }
+
+    /* =====================================================
+       SERVICE CARDS
+    ===================================================== */
+    .svc-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+    .svc-icon {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    .svc-card h4 { font-size: 9.5pt; font-weight: 700; margin-bottom: 4px; }
+    .svc-card p  { font-size: 7.5pt; color: var(--muted); line-height: 1.5; }
+    .svc-port {
+      display: inline-block;
+      margin-top: 6px;
+      background: rgba(225,29,72,0.1);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 2px 7px;
+      font-size: 7pt;
+      font-weight: 700;
+      color: var(--brand2);
+      font-family: monospace;
+    }
+    .svc-tech {
+      display: inline-block;
+      margin-top: 3px;
+      background: rgba(245,158,11,0.1);
+      border: 1px solid rgba(245,158,11,0.3);
+      border-radius: 5px;
+      padding: 2px 7px;
+      font-size: 7pt;
+      font-weight: 700;
+      color: var(--accent);
+      font-family: monospace;
+      margin-left: 4px;
+    }
+
+    /* =====================================================
+       ARCHITECTURE DIAGRAM
+    ===================================================== */
+    .arch          { display: flex; flex-direction: column; align-items: center; gap: 0; }
+    .arch-row      { display: flex; align-items: center; gap: 0; justify-content: center; }
+    .arch-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 16px;
+      text-align: center;
+      font-size: 8.5pt;
+      font-weight: 700;
+      min-width: 44mm;
+    }
+    .arch-box.highlight {
+      border-color: var(--brand);
+      background: rgba(225,29,72,0.1);
+      box-shadow: 0 0 20px rgba(225,29,72,0.2);
+    }
+    .arch-box .sub { font-size: 7pt; color: var(--muted); font-weight: 400; margin-top: 2px; }
+    .arch-arrow    { display: flex; flex-direction: column; align-items: center; color: var(--muted); font-size: 14pt; line-height: 1; margin: 3px 0; }
+    .arch-services { display: flex; gap: 8px; justify-content: center; }
+    .arch-db       { display: flex; justify-content: center; gap: 8px; margin-top: 4px; }
+    .db-box {
+      background: rgba(34,197,94,0.07);
+      border: 1px solid rgba(34,197,94,0.25);
+      border-radius: 7px;
+      padding: 4px 11px;
+      font-size: 7.5pt;
+      font-weight: 600;
+      color: var(--success);
+      text-align: center;
+    }
+    .kafka-box {
+      background: rgba(245,158,11,0.08);
+      border: 1px solid rgba(245,158,11,0.3);
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 8pt;
+      font-weight: 700;
+      color: var(--accent);
+      text-align: center;
+    }
+
+    /* =====================================================
+       TERRAFORM / CODE
+    ===================================================== */
+    .tf-file {
+      background: rgba(225,29,72,0.05);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 13px;
+      margin-bottom: 5px;
+    }
+    .tf-file .filename { font-family: monospace; font-size: 8.5pt; font-weight: 700; color: var(--accent); margin-bottom: 2px; }
+    .tf-file .desc     { font-size: 7.5pt; color: var(--muted); }
+
+    .code-block {
+      background: #0d0d1a;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-family: monospace;
+      font-size: 7.5pt;
+      line-height: 1.6;
+      color: #c9d1e0;
+      overflow: hidden;
+    }
+    .code-block .c-keyword { color: #fb7185; }
+    .code-block .c-string  { color: #86efac; }
+    .code-block .c-comment { color: #4a5568; }
+    .code-block .c-var     { color: var(--accent); }
+    .code-block .c-type    { color: #7dd3fc; }
+
+    /* =====================================================
+       PIPELINE
+    ===================================================== */
+    .pipeline    { display: flex; align-items: flex-start; gap: 0; }
+    .pipe-stage  { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 13px; }
+    .pipe-arrow  { font-size: 18pt; color: var(--muted); padding: 0 4px; align-self: center; flex-shrink: 0; }
+    .pipe-stage h4 { font-size: 9.5pt; font-weight: 800; margin-bottom: 9px; padding-bottom: 7px; border-bottom: 1px solid var(--border); }
+    .pipe-step   { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 7px; font-size: 8pt; }
+    .pipe-dot    { width: 6px; height: 6px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+
+    /* =====================================================
+       K8s / MISC ITEMS
+    ===================================================== */
+    .k8s-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 8px 11px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 5px;
+    }
+    .k8s-item .ki-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+    .k8s-item .ki-name { font-size: 8pt;  font-weight: 700; }
+    .k8s-item .ki-desc { font-size: 7.5pt; color: var(--muted); margin-top: 1px; }
+
+    /* =====================================================
+       TABLES
+    ===================================================== */
+    table { width: 100%; border-collapse: collapse; font-size: 8pt; }
+    th {
+      text-align: left;
+      font-size: 7.5pt; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.8px;
+      color: var(--muted);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    td { padding: 7px 12px; border-bottom: 1px solid rgba(225,29,72,0.1); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+
+    .method         { display: inline-block; padding: 2px 7px; border-radius: 4px; font-family: monospace; font-size: 7.5pt; font-weight: 700; }
+    .method-get     { background: rgba(34,197,94,0.12);  color: #22c55e; }
+    .method-post    { background: rgba(59,130,246,0.12); color: #3b82f6; }
+    .method-put     { background: rgba(234,179,8,0.12);  color: #eab308; }
+    .method-patch   { background: rgba(168,85,247,0.12); color: #a855f7; }
+    .method-delete  { background: rgba(239,68,68,0.12);  color: #ef4444; }
+    .path           { font-family: monospace; font-size: 7.5pt; }
+
+    /* =====================================================
+       AZURE CARDS
+    ===================================================== */
+    .azure-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 13px 15px; }
+    .azure-card .az-icon { font-size: 20px; margin-bottom: 6px; }
+    .azure-card h4 { font-size: 9pt; font-weight: 700; margin-bottom: 4px; }
+    .azure-card p  { font-size: 7.5pt; color: var(--muted); line-height: 1.5; }
+    .az-tag {
+      display: inline-block; margin-top: 6px;
+      background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3);
+      border-radius: 4px; padding: 2px 8px; font-size: 7pt; font-weight: 700; color: var(--info);
+    }
+
+    /* =====================================================
+       CLOSING SLIDE
+    ===================================================== */
+    .closing {
+      justify-content: center; align-items: center; text-align: center;
+      background: radial-gradient(ellipse 100% 80% at 50% 50%, rgba(225,29,72,0.12) 0%, transparent 70%),
+                  var(--dark);
+    }
+    .closing h2    { font-size: 30pt; font-weight: 900; letter-spacing: -1px; margin: 20px 0 14px; }
+    .closing p     { font-size: 11pt; color: var(--muted); max-width: 110mm; margin: 0 auto 24px; line-height: 1.7; }
+    .closing-grid  { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; text-align: left; }
+    .closing-item  { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 13px; }
+    .closing-item .ci-icon { font-size: 18px; margin-bottom: 6px; }
+    .closing-item h5 { font-size: 9pt; font-weight: 700; margin-bottom: 4px; }
+    .closing-item p  { font-size: 7.5pt; color: var(--muted); }
+
+    /* =====================================================
+       PRINT
+    ===================================================== */
+    @media print {
+      @page { size: A4 landscape; margin: 0; }
+      body  { background: var(--dark); }
+      .slide { margin: 0; width: 297mm; height: 210mm; min-height: 210mm; page-break-after: always; break-after: page; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    }
+
+    /* =====================================================
+       SCREEN TOOLBAR
+    ===================================================== */
+    .toolbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      background: rgba(10,10,18,0.96);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(225,29,72,0.2);
+      padding: 10px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      z-index: 9999; gap: 12px;
+    }
+    .toolbar-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 0.95rem; }
+    .toolbar-brand .dot { width: 10px; height: 10px; border-radius: 50%; background: linear-gradient(135deg, #e11d48, #be123c); }
+    .toolbar-info  { font-size: 0.78rem; color: var(--muted); }
+    .btn-print {
+      background: linear-gradient(135deg, #e11d48, #be123c);
+      color: white; border: none; padding: 8px 20px;
+      border-radius: 8px; font-weight: 700; cursor: pointer;
+      font-family: 'Inter', sans-serif; font-size: 0.88rem; transition: 0.2s;
+    }
+    .btn-print:hover { opacity: 0.88; transform: translateY(-1px); }
+    @media print { .toolbar { display: none; } }
+    .slides-wrap { padding-top: 56px; }
+    @media print { .slides-wrap { padding-top: 0; } }
+  </style>
+</head>
+<body>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="toolbar-brand">
+    <div class="dot"></div>
+    ZingyBank — Project Presentation
+  </div>
+  <span class="toolbar-info">11 slides · Open in browser → Print → Save as PDF (A4 Landscape, No margins)</span>
+  <button class="btn-print" onclick="window.print()">🖨 Save as PDF</button>
+</div>
+
+<div class="slides-wrap">
+
+<!-- =====================================================
+     SLIDE 1 — COVER
+===================================================== -->
+<div class="slide cover">
+  <div class="blob" style="width:160mm;height:160mm;background:rgba(225,29,72,0.12);top:-40mm;right:-30mm;"></div>
+  <div class="blob" style="width:100mm;height:100mm;background:rgba(190,18,60,0.08);bottom:-20mm;left:30mm;"></div>
+
+  <div class="cover-eyebrow">🏦 Full Retail Banking · Azure · Kubernetes · Microservices</div>
+
+  <h1>
+    <span class="grad-text-2">Zingy</span><br>
+    <span class="grad-text">Bank</span>
+  </h1>
+
+  <p class="cover-subtitle">
+    A production-grade, cloud-agnostic retail banking platform built with
+    11 independently deployable microservices, a React 18 dark-theme frontend,
+    and a complete cloud infrastructure deployed via Terraform and GitHub Actions CI/CD.
+  </p>
+
+  <!-- Live status banner -->
+  <div style="display:flex;align-items:center;gap:12px;margin:10px 0;padding:10px 16px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);border-radius:10px;font-size:8.5pt;">
+    <span style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;flex-shrink:0;box-shadow:0 0 8px #22c55e;"></span>
+    <span><strong style="color:#22c55e;">LIVE ON AZURE</strong> &nbsp;·&nbsp; 25/25 pods running &nbsp;·&nbsp;
+      Frontend: <code style="color:var(--accent);">http://72.153.114.15</code> &nbsp;·&nbsp;
+      Grafana: <code style="color:var(--accent);">http://72.153.114.15/grafana</code> &nbsp;·&nbsp;
+      Prometheus: <code style="color:var(--accent);">http://72.153.114.15/prometheus</code>
+    </span>
+  </div>
+
+  <div class="cover-tags">
+    <span class="tag">Java 21</span>
+    <span class="tag">Spring Boot 3.4</span>
+    <span class="tag">React 18</span>
+    <span class="tag">TypeScript</span>
+    <span class="tag">PostgreSQL ×10</span>
+    <span class="tag">Apache Kafka</span>
+    <span class="tag">Kubernetes (AKS)</span>
+    <span class="tag">Terraform</span>
+    <span class="tag">ArgoCD</span>
+    <span class="tag">Prometheus</span>
+    <span class="tag">Grafana</span>
+    <span class="tag">OpenTelemetry</span>
+  </div>
+
+  <div class="cover-meta">
+    <div class="meta-item">
+      <span class="meta-label">Services</span>
+      <span class="meta-value">11 Microservices</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Cloud</span>
+      <span class="meta-value">Microsoft Azure</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">IaC Tool</span>
+      <span class="meta-value">Terraform</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Pipeline</span>
+      <span class="meta-value">GitHub Actions CI/CD</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Monitoring</span>
+      <span class="meta-value">Prometheus + Grafana</span>
+    </div>
+  </div>
+
+  <div class="cover-deco">🏦</div>
+  <div class="slide-num">1 / 11</div>
+  <div class="slide-brand"><span>ZingyBank</span></div>
+</div>
+
+<!-- =====================================================
+     SLIDE 2 — WHAT IS ZINGYBANK?
+===================================================== -->
+<div class="slide">
+  <div class="blob" style="width:120mm;height:120mm;background:rgba(225,29,72,0.08);top:-30mm;right:-20mm;"></div>
+
+  <div class="slide-header">
+    <div class="label">Overview</div>
+    <h2 class="grad-text-2">What Is ZingyBank?</h2>
+    <div class="divider"></div>
+  </div>
+
+  <div class="grid-2" style="gap:14px;flex:1;">
+    <!-- Left -->
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="card" style="flex:1;">
+        <p style="font-size:10pt;line-height:1.75;color:#d0d0ea;">
+          ZingyBank is a <strong style="color:#fff;">production-grade retail banking platform</strong> split
+          into 11 independent microservices, each responsible for a distinct banking domain.
+          All requests enter through a central <strong style="color:#fff;">API Gateway</strong> built with
+          Spring Cloud Gateway MVC, which handles JWT validation, routing, and rate limiting.
+        </p>
+        <p style="font-size:10pt;line-height:1.75;color:#d0d0ea;margin-top:12px;">
+          The entire platform runs on <strong style="color:#fff;">Java 21 + Spring Boot 3.4</strong> on the backend
+          and a <strong style="color:#fff;">React 18 + TypeScript dark-theme SPA</strong> on the frontend.
+          Infrastructure is fully described in <strong style="color:#fff;">Terraform</strong>, deployed to
+          <strong style="color:#fff;">Azure Kubernetes Service</strong>, and delivered via a multi-stage
+          <strong style="color:#fff;">GitHub Actions pipeline</strong>.
+        </p>
+      </div>
+
+      <!-- 3 pillars -->
+      <div class="grid-3" style="gap:8px;">
+        <div class="card card-sm" style="text-align:center;">
+          <div style="font-size:22px;margin-bottom:6px;">💳</div>
+          <div style="font-size:8.5pt;font-weight:700;">Full Banking Suite</div>
+          <div style="font-size:7.5pt;color:var(--muted);margin-top:3px;">Accounts, loans, cards, payments</div>
+        </div>
+        <div class="card card-sm" style="text-align:center;">
+          <div style="font-size:22px;margin-bottom:6px;">🔐</div>
+          <div style="font-size:8.5pt;font-weight:700;">Role-Based Auth</div>
+          <div style="font-size:7.5pt;color:var(--muted);margin-top:3px;">5 roles, JWT + BCrypt</div>
+        </div>
+        <div class="card card-sm" style="text-align:center;">
+          <div style="font-size:22px;margin-bottom:6px;">📊</div>
+          <div style="font-size:8.5pt;font-weight:700;">Full Observability</div>
+          <div style="font-size:7.5pt;color:var(--muted);margin-top:3px;">Prometheus, Grafana, Jaeger</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: features -->
+    <div class="card" style="display:flex;flex-direction:column;gap:9px;">
+      <div style="font-size:9pt;font-weight:700;color:var(--brand2);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Key Capabilities</div>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        <div style="display:flex;align-items:center;gap:10px;font-size:9pt;"><span style="color:var(--success);font-size:11pt;">✔</span><span>Customer onboarding with KYC identity verification</span></div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:9pt;"><span style="color:var(--success);font-size:11pt;">✔</span><span>Multi-account management (Checking, Savings, Business, CD)</span></div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:9pt;"><span style="color:var(--success);font-size:11pt;">✔</span><span>Real-time fund transfers and domestic wire payments</span></div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:9pt;"><span style="color:var(--success);font-size:11pt;">✔</span><span>Loan origination, amortisation, and repayment tracking</span></div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:9pt;"><span style="color:var(--success);font-size:11pt;">✔</span><span>Virtual and physical card issuance with controls</span></div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:9pt;"><span style="color:var(--success);font-size:11pt;">✔</span><span>Automated email and SMS notification service</span></div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:9pt;"><span style="color:var(--success);font-size:11pt;">✔</span><span>PDF statement generation for any date range</span></div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:9pt;"><span style="color:var(--success);font-size:11pt;">✔</span><span>Immutable audit log of every system action</span></div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:9pt;"><span style="color:var(--success);font-size:11pt;">✔</span><span>Admin observability dashboard (Prometheus + Grafana)</span></div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:9pt;"><span style="color:var(--success);font-size:11pt;">✔</span><span>Full CI/CD → AKS with ArgoCD GitOps delivery</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-num">2 / 11</div>
+  <div class="slide-brand"><span>ZingyBank</span></div>
+</div>
+
+<!-- =====================================================
+     SLIDE 3 — 11 MICROSERVICES
+===================================================== -->
+<div class="slide">
+  <div class="blob" style="width:100mm;height:100mm;background:rgba(190,18,60,0.07);bottom:-20mm;left:-10mm;"></div>
+
+  <div class="slide-header">
+    <div class="label">Architecture</div>
+    <h2 class="grad-text-2">The 11 Microservices</h2>
+    <div class="divider"></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;flex:1;">
+
+    <!-- API Gateway — spans 2 columns -->
+    <div class="svc-card" style="grid-column:span 2;border-color:var(--brand);display:flex;gap:14px;align-items:flex-start;">
+      <div class="svc-icon" style="background:rgba(225,29,72,0.15);flex-shrink:0;width:42px;height:42px;border-radius:10px;font-size:20px;">🔀</div>
+      <div>
+        <h4 style="font-size:10.5pt;">API Gateway</h4>
+        <p>The single public entry point for all client traffic. Built with Spring Cloud Gateway MVC — routes requests to downstream services, validates JWT tokens on every protected route, enforces rate limits, and logs all requests with structured JSON via Logback + Loki.</p>
+        <div><span class="svc-port">:8080</span><span class="svc-tech">Spring Cloud Gateway MVC</span></div>
+      </div>
+    </div>
+
+    <!-- Auth Service -->
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(34,197,94,0.12);">🔐</div>
+      <h4>Auth Service</h4>
+      <p>User registration, login, JWT issuance, BCrypt password hashing, role management (CUSTOMER · TELLER · MANAGER · ADMIN).</p>
+      <div><span class="svc-port">:8081</span></div>
+    </div>
+
+    <!-- Account Service -->
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(59,130,246,0.12);">🏦</div>
+      <h4>Account Service</h4>
+      <p>Account lifecycle — open, close, freeze. Types: CHECKING, SAVINGS, BUSINESS_CHECKING, MONEY_MARKET, CD.</p>
+      <div><span class="svc-port">:8082</span></div>
+    </div>
+
+    <!-- Transaction Service -->
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(245,158,11,0.12);">↔️</div>
+      <h4>Transaction Service</h4>
+      <p>Deposits, withdrawals, internal transfers. Transactional integrity with Spring @Transactional + optimistic locking.</p>
+      <div><span class="svc-port">:8083</span></div>
+    </div>
+
+    <!-- Payment Service -->
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(168,85,247,0.12);">💸</div>
+      <h4>Payment Service</h4>
+      <p>Bill payments, external transfers, scheduled recurring payments. Idempotency keys prevent duplicate debits.</p>
+      <div><span class="svc-port">:8084</span></div>
+    </div>
+
+    <!-- Loan Service -->
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(225,29,72,0.12);">🏛</div>
+      <h4>Loan Service</h4>
+      <p>Loan origination, credit decision, amortisation schedule, EMI tracking, overdue detection and status updates.</p>
+      <div><span class="svc-port">:8085</span></div>
+    </div>
+
+    <!-- Card Service -->
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(59,130,246,0.12);">💳</div>
+      <h4>Card Service</h4>
+      <p>Virtual and physical card issuance, PIN management, card freeze/unfreeze, spending limit controls.</p>
+      <div><span class="svc-port">:8086</span></div>
+    </div>
+
+    <!-- KYC Service -->
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(34,197,94,0.12);">🪪</div>
+      <h4>KYC Service</h4>
+      <p>Identity verification documents, AML screening, compliance status (PENDING_VERIFICATION → ACTIVE). Triggers onboarding flow.</p>
+      <div><span class="svc-port">:8087</span></div>
+    </div>
+
+    <!-- Notification Service -->
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(245,158,11,0.12);">🔔</div>
+      <h4>Notification Service</h4>
+      <p>Email and SMS notifications triggered by Kafka events from other services. Async, non-blocking delivery.</p>
+      <div><span class="svc-port">:8088</span></div>
+    </div>
+
+    <!-- Statement Service -->
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(168,85,247,0.12);">📄</div>
+      <h4>Statement Service</h4>
+      <p>On-demand PDF statement generation for any account and date range. Uses iText for PDF rendering.</p>
+      <div><span class="svc-port">:8089</span></div>
+    </div>
+
+    <!-- Audit Service -->
+    <div class="svc-card">
+      <div class="svc-icon" style="background:rgba(239,68,68,0.12);">📋</div>
+      <h4>Audit Service</h4>
+      <p>Immutable audit log of every system action. Append-only, tamper-evident. Compulsory PCI-DSS and SOC 2 compliance trail.</p>
+      <div><span class="svc-port">:8090</span></div>
+    </div>
+
+    <!-- Design Principles -->
+    <div class="card" style="display:flex;flex-direction:column;justify-content:center;gap:8px;padding:12px 14px;">
+      <div style="font-size:8pt;font-weight:700;color:var(--brand2);text-transform:uppercase;letter-spacing:1px;">Design Principles</div>
+      <div style="font-size:7.5pt;display:flex;align-items:flex-start;gap:7px;"><span style="color:var(--brand2);">▸</span><span>Each service owns its own PostgreSQL database — no shared stores</span></div>
+      <div style="font-size:7.5pt;display:flex;align-items:flex-start;gap:7px;"><span style="color:var(--brand2);">▸</span><span>Async events via Apache Kafka between services</span></div>
+      <div style="font-size:7.5pt;display:flex;align-items:flex-start;gap:7px;"><span style="color:var(--brand2);">▸</span><span>Each service exposes <code style="color:var(--accent);">/actuator/health</code> for K8s probes</span></div>
+      <div style="font-size:7.5pt;display:flex;align-items:flex-start;gap:7px;"><span style="color:var(--brand2);">▸</span><span>JWT validated independently per service</span></div>
+    </div>
+
+  </div>
+
+  <div class="slide-num">3 / 11</div>
+  <div class="slide-brand"><span>ZingyBank</span></div>
+</div>
+
+<!-- =====================================================
+     SLIDE 4 — ARCHITECTURE DIAGRAM
+===================================================== -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="label">System Design</div>
+    <h2 class="grad-text-2">Architecture Diagram</h2>
+    <div class="divider"></div>
+  </div>
+
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+    <div class="arch" style="gap:4px;">
+
+      <!-- Internet -->
+      <div class="arch-row">
+        <div class="arch-box" style="background:rgba(245,158,11,0.08);border-color:rgba(245,158,11,0.3);min-width:36mm;">
+          <div>🌐 Internet</div>
+          <div class="sub">Browser / Mobile</div>
+        </div>
+      </div>
+
+      <div class="arch-arrow">↓</div>
+
+      <!-- Ingress + Frontend / Gateway -->
+      <div class="arch-row" style="gap:12px;">
+        <div class="arch-box">
+          <div>🖥 Frontend</div>
+          <div class="sub">React 18 · nginx · Port 3000</div>
+        </div>
+        <div style="font-size:9pt;color:var(--muted);align-self:center;padding:0 6px;">API calls</div>
+        <div class="arch-box highlight">
+          <div>🔀 API Gateway</div>
+          <div class="sub">Spring Cloud · Port 8080</div>
+        </div>
+        <div style="font-size:9pt;color:var(--muted);align-self:center;padding:0 6px;">JWT check</div>
+        <div class="arch-box" style="background:rgba(245,158,11,0.06);border-color:rgba(245,158,11,0.25);">
+          <div>⚙ NGINX Ingress</div>
+          <div class="sub">TLS termination · Public IP</div>
+        </div>
+      </div>
+
+      <div class="arch-arrow">↓ routes to</div>
+
+      <!-- Services row 1 -->
+      <div class="arch-services" style="gap:7px;">
+        <div class="arch-box" style="min-width:30mm;font-size:8pt;padding:6px 10px;"><div>🔐 Auth</div><div class="sub">:8081</div></div>
+        <div class="arch-box" style="min-width:30mm;font-size:8pt;padding:6px 10px;"><div>🏦 Account</div><div class="sub">:8082</div></div>
+        <div class="arch-box" style="min-width:30mm;font-size:8pt;padding:6px 10px;"><div>↔️ Transaction</div><div class="sub">:8083</div></div>
+        <div class="arch-box" style="min-width:30mm;font-size:8pt;padding:6px 10px;"><div>💸 Payment</div><div class="sub">:8084</div></div>
+        <div class="arch-box" style="min-width:30mm;font-size:8pt;padding:6px 10px;"><div>🏛 Loan</div><div class="sub">:8085</div></div>
+        <div class="arch-box" style="min-width:30mm;font-size:8pt;padding:6px 10px;"><div>+5 services</div><div class="sub">:8086–:8090</div></div>
+      </div>
+
+      <!-- Arrows to DBs -->
+      <div class="arch-row" style="gap:29px;">
+        <div class="arch-arrow" style="margin:0;">↓</div>
+        <div class="arch-arrow" style="margin:0;">↓</div>
+        <div class="arch-arrow" style="margin:0;">↓</div>
+        <div class="arch-arrow" style="margin:0;">↓</div>
+        <div class="arch-arrow" style="margin:0;">↓</div>
+        <div class="arch-arrow" style="margin:0;">↓</div>
+      </div>
+
+      <!-- Databases -->
+      <div class="arch-db" style="gap:7px;">
+        <div class="db-box">🗄 auth_db</div>
+        <div class="db-box">🗄 account_db</div>
+        <div class="db-box">🗄 txn_db</div>
+        <div class="db-box">🗄 payment_db</div>
+        <div class="db-box">🗄 loan_db</div>
+        <div class="db-box">🗄 + 5 more DBs</div>
+      </div>
+
+      <!-- Kafka -->
+      <div style="margin-top:6px;display:flex;align-items:center;gap:8px;justify-content:center;">
+        <div style="flex:1;height:1px;background:rgba(245,158,11,0.2);"></div>
+        <div class="kafka-box">⚡ Apache Kafka · Event Bus · async inter-service communication</div>
+        <div style="flex:1;height:1px;background:rgba(245,158,11,0.2);"></div>
+      </div>
+    </div>
+
+    <!-- Bottom info cards -->
+    <div style="display:flex;gap:10px;margin-top:10px;">
+      <div class="card" style="flex:1;font-size:7.5pt;line-height:1.6;color:var(--muted);">
+        <strong style="color:#fff;display:block;margin-bottom:3px;">🔐 Authentication Flow</strong>
+        Browser → <span style="color:var(--accent);">POST /api/auth/login</span> → Auth Service issues JWT →
+        Browser sends <span style="color:var(--accent);">Authorization: Bearer &lt;token&gt;</span> →
+        Gateway validates signature + roles before forwarding.
+      </div>
+      <div class="card" style="flex:1;font-size:7.5pt;line-height:1.6;color:var(--muted);">
+        <strong style="color:#fff;display:block;margin-bottom:3px;">▸ In Kubernetes (AKS)</strong>
+        Each service runs as a <em>Deployment</em> (2 replicas by default).
+        ClusterIP <em>Service</em> gives each a stable DNS name, e.g.
+        <span style="color:var(--accent);">http://account-service:8082</span>.
+        Only Gateway + Frontend get a public LoadBalancer IP.
+      </div>
+      <div class="card" style="flex:1;font-size:7.5pt;line-height:1.6;color:var(--muted);">
+        <strong style="color:#fff;display:block;margin-bottom:3px;">📡 Observability Layer</strong>
+        Every service exposes <span style="color:var(--accent);">/actuator/prometheus</span>.
+        Prometheus scrapes all pods → Grafana dashboards.
+        OpenTelemetry traces → Jaeger. Logs → Loki via Promtail.
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-num">4 / 11</div>
+  <div class="slide-brand"><span>ZingyBank</span></div>
+</div>
+
+<!-- =====================================================
+     SLIDE 5 — FRONTEND APPLICATION
+===================================================== -->
+<div class="slide">
+  <div class="blob" style="width:120mm;height:120mm;background:rgba(225,29,72,0.08);top:-20mm;right:-10mm;"></div>
+
+  <div class="slide-header">
+    <div class="label">Client Application</div>
+    <h2 class="grad-text-2">Frontend Application</h2>
+    <div class="divider"></div>
+  </div>
+
+  <div class="grid-2" style="gap:14px;flex:1;">
+
+    <!-- Left: Stack + Pages -->
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="font-size:8.5pt;font-weight:700;color:var(--brand2);text-transform:uppercase;letter-spacing:1px;">Tech Stack</div>
+      <div class="grid-2" style="gap:8px;">
+        <div class="card card-sm" style="display:flex;gap:8px;align-items:center;">
+          <span style="font-size:16px;">⚛</span>
+          <div><div style="font-size:8.5pt;font-weight:700;">React 18 + TypeScript</div><div style="font-size:7.5pt;color:var(--muted);">Hooks, TanStack Query</div></div>
+        </div>
+        <div class="card card-sm" style="display:flex;gap:8px;align-items:center;">
+          <span style="font-size:16px;">⚡</span>
+          <div><div style="font-size:8.5pt;font-weight:700;">Vite 6</div><div style="font-size:7.5pt;color:var(--muted);">HMR, build optimisation</div></div>
+        </div>
+        <div class="card card-sm" style="display:flex;gap:8px;align-items:center;">
+          <span style="font-size:16px;">🎨</span>
+          <div><div style="font-size:8.5pt;font-weight:700;">Tailwind CSS v4</div><div style="font-size:7.5pt;color:var(--muted);">Dark theme, custom palette</div></div>
+        </div>
+        <div class="card card-sm" style="display:flex;gap:8px;align-items:center;">
+          <span style="font-size:16px;">📊</span>
+          <div><div style="font-size:8.5pt;font-weight:700;">Recharts</div><div style="font-size:7.5pt;color:var(--muted);">Balance trend charts</div></div>
+        </div>
+        <div class="card card-sm" style="display:flex;gap:8px;align-items:center;">
+          <span style="font-size:16px;">🔭</span>
+          <div><div style="font-size:8.5pt;font-weight:700;">OpenTelemetry Browser</div><div style="font-size:7.5pt;color:var(--muted);">Distributed traces to Jaeger</div></div>
+        </div>
+        <div class="card card-sm" style="display:flex;gap:8px;align-items:center;">
+          <span style="font-size:16px;">🐻</span>
+          <div><div style="font-size:8.5pt;font-weight:700;">Zustand</div><div style="font-size:7.5pt;color:var(--muted);">Auth + UI state management</div></div>
+        </div>
+      </div>
+
+      <div style="font-size:8.5pt;font-weight:700;color:var(--brand2);text-transform:uppercase;letter-spacing:1px;margin-top:4px;">Pages &amp; Routes</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+        <div style="font-size:8pt;padding:5px 9px;background:var(--card);border:1px solid var(--border);border-radius:6px;">/dashboard — Balance overview + charts</div>
+        <div style="font-size:8pt;padding:5px 9px;background:var(--card);border:1px solid var(--border);border-radius:6px;">/accounts — Account management</div>
+        <div style="font-size:8pt;padding:5px 9px;background:var(--card);border:1px solid var(--border);border-radius:6px;">/transfer — Fund transfer form</div>
+        <div style="font-size:8pt;padding:5px 9px;background:var(--card);border:1px solid var(--border);border-radius:6px;">/payments — Bill payments</div>
+        <div style="font-size:8pt;padding:5px 9px;background:var(--card);border:1px solid var(--border);border-radius:6px;">/loans — Loan management</div>
+        <div style="font-size:8pt;padding:5px 9px;background:var(--card);border:1px solid var(--border);border-radius:6px;">/cards — Card controls</div>
+        <div style="font-size:8pt;padding:5px 9px;background:var(--card);border:1px solid var(--border);border-radius:6px;">/statements — PDF download</div>
+        <div style="font-size:8pt;padding:5px 9px;background:var(--card);border:1px solid var(--border);border-radius:6px;">/observability — Admin metrics (role-gated)</div>
+      </div>
+    </div>
+
+    <!-- Right: Theme + code -->
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="font-size:8.5pt;font-weight:700;color:var(--brand2);text-transform:uppercase;letter-spacing:1px;">Dark Theme — Color System</div>
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <div style="display:flex;align-items:center;gap:10px;font-size:8pt;">
+          <div style="width:28px;height:28px;border-radius:6px;background:#0d0f1a;border:1px solid rgba(255,255,255,0.1);flex-shrink:0;"></div>
+          <div><strong>Background</strong> <span style="color:var(--muted);">#0D0F1A</span> — page background</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:8pt;">
+          <div style="width:28px;height:28px;border-radius:6px;background:#141625;border:1px solid rgba(255,255,255,0.1);flex-shrink:0;"></div>
+          <div><strong>Card</strong> <span style="color:var(--muted);">#141625</span> — card surfaces</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:8pt;">
+          <div style="width:28px;height:28px;border-radius:6px;background:#e11d48;flex-shrink:0;"></div>
+          <div><strong>Primary</strong> <span style="color:var(--muted);">#E11D48</span> — crimson accent</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:8pt;">
+          <div style="width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,#fda4af,#e11d48,#9f1239);flex-shrink:0;"></div>
+          <div><strong>Gradient Text</strong> — rose-300 → rose-800 on headings</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:8pt;">
+          <div style="width:28px;height:28px;border-radius:6px;background:#1c0a12;border:1px solid rgba(255,255,255,0.1);flex-shrink:0;"></div>
+          <div><strong>Sidebar</strong> <span style="color:var(--muted);">#1C0A12</span> — dark wine</div>
+        </div>
+      </div>
+
+      <div class="code-block">
+<span class="c-comment">/* globals.css — CSS custom properties */</span>
+<span class="c-keyword">@theme</span> {
+  <span class="c-var">--color-zingy-600</span>: <span class="c-string">#e11d48</span>; <span class="c-comment">/* crimson       */</span>
+  <span class="c-var">--color-zingy-700</span>: <span class="c-string">#be123c</span>; <span class="c-comment">/* burgundy      */</span>
+  <span class="c-var">--color-zingy-900</span>: <span class="c-string">#1c0a12</span>; <span class="c-comment">/* sidebar bg    */</span>
+  <span class="c-var">--color-bank-bg</span>:   <span class="c-string">#0d0f1a</span>; <span class="c-comment">/* page bg       */</span>
+  <span class="c-var">--color-bank-card</span>: <span class="c-string">#141625</span>; <span class="c-comment">/* card surface  */</span>
+}
+<span class="c-keyword">.gradient-text</span> {
+  background: linear-gradient(<span class="c-string">135deg</span>, <span class="c-string">#fda4af</span>, <span class="c-string">#e11d48</span>, <span class="c-string">#9f1239</span>);
+  <span class="c-type">-webkit-background-clip</span>: text;
+}
+      </div>
+
+      <div style="font-size:7.5pt;color:var(--muted);padding:6px 10px;border-left:2px solid var(--brand);background:rgba(225,29,72,0.05);border-radius:0 6px 6px 0;">
+        💡 The observability page is role-gated — only visible to users with ADMIN, MANAGER, or COMPLIANCE_OFFICER roles. The JWT carries roles and Zustand stores them; the sidebar link appears or hides on login.
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-num">5 / 11</div>
+  <div class="slide-brand"><span>ZingyBank</span></div>
+</div>
+
+<!-- =====================================================
+     SLIDE 6 — AZURE INFRASTRUCTURE & TERRAFORM
+===================================================== -->
+<div class="slide">
+  <div class="blob" style="width:120mm;height:120mm;background:rgba(59,130,246,0.06);top:-20mm;right:-10mm;"></div>
+
+  <div class="slide-header">
+    <div class="label">Cloud Infrastructure</div>
+    <h2 class="grad-text-2">Azure Infrastructure &amp; Terraform</h2>
+    <div class="divider"></div>
+  </div>
+
+  <div class="grid-2" style="gap:14px;flex:1;">
+
+    <!-- Left: Azure resources -->
+    <div>
+      <div style="font-size:8.5pt;font-weight:700;color:var(--brand2);text-transform:uppercase;letter-spacing:1px;margin-bottom:9px;">Azure Resources</div>
+      <div class="grid-2" style="gap:8px;">
+        <div class="azure-card" style="border-color:var(--brand);">
+          <div class="az-icon">▸</div>
+          <h4>Azure Kubernetes Service</h4>
+          <p>Private cluster, Azure AD RBAC, system + app node pools, Key Vault secrets provider, Container Insights.</p>
+          <div><span class="az-tag">D2s_v5 system · D4s_v5 app</span></div>
+        </div>
+        <div class="azure-card">
+          <div class="az-icon">🐘</div>
+          <h4>PostgreSQL Flexible Server</h4>
+          <p>10 per-service databases, VNet delegation, SSL enforced, 35-day backup retention, connection logging on.</p>
+          <div><span class="az-tag">PG 16 · GP_Standard_D2s_v3</span></div>
+        </div>
+        <div class="azure-card">
+          <div class="az-icon">🐳</div>
+          <h4>Azure Container Registry</h4>
+          <p>Private image registry for all service Docker images. AKS pulls via managed identity — no passwords.</p>
+          <div><span class="az-tag">Standard SKU · Geo-replication</span></div>
+        </div>
+        <div class="azure-card">
+          <div class="az-icon">🔑</div>
+          <h4>Azure Key Vault</h4>
+          <p>Stores JWT signing key, DB credentials, and API secrets. AKS Secrets Store CSI driver mounts them as K8s secrets.</p>
+          <div><span class="az-tag">CSI Driver · Secret Rotation</span></div>
+        </div>
+        <div class="azure-card">
+          <div class="az-icon">📊</div>
+          <h4>Log Analytics Workspace</h4>
+          <p>Container logs, K8s control-plane events, and custom metrics. 90-day retention (banking minimum).</p>
+          <div><span class="az-tag">PerGB2018 · 90-day retention</span></div>
+        </div>
+        <div class="azure-card">
+          <div class="az-icon">🗄</div>
+          <h4>Blob Storage (Remote State)</h4>
+          <p>Terraform remote state stored in Azure Blob. Each environment has its own state key (dev / staging / prod).</p>
+          <div><span class="az-tag">Standard_LRS · tfstate container</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Terraform structure -->
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="font-size:8.5pt;font-weight:700;color:var(--brand2);text-transform:uppercase;letter-spacing:1px;">Terraform Module Structure</div>
+      <div class="tf-file">
+        <div class="filename">📁 modules/azure/aks/main.tf</div>
+        <div class="desc">AKS cluster, system + app node pools, AAD RBAC (tenant_id from data source), Key Vault CSI provider, Log Analytics OMS agent.</div>
+      </div>
+      <div class="tf-file">
+        <div class="filename">📁 modules/azure/database/main.tf</div>
+        <div class="desc">PostgreSQL Flexible Server, 10 per-service databases, VNet delegation, SSL + connection logging configs.</div>
+      </div>
+      <div class="tf-file">
+        <div class="filename">📁 modules/azure/networking/main.tf</div>
+        <div class="desc">VNet (10.0.0.0/8), 4 subnets: system-nodes, app-nodes, database, private-endpoints. NSGs, private DNS zones.</div>
+      </div>
+      <div class="tf-file">
+        <div class="filename">📁 environments/dev/main.tf</div>
+        <div class="desc">Composes all modules for dev. Backend block: Blob Storage remote state at key <code style="color:var(--accent);">dev.terraform.tfstate</code>.</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <div style="display:flex;align-items:center;gap:10px;padding:7px 11px;background:var(--card);border:1px solid var(--border);border-radius:8px;font-size:8pt;">
+          <span style="background:linear-gradient(135deg,var(--brand),var(--brand2));color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:7pt;font-weight:800;flex-shrink:0;">1</span>
+          <div><strong>terraform init</strong> — downloads Azure provider, connects to remote state</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:7px 11px;background:var(--card);border:1px solid var(--border);border-radius:8px;font-size:8pt;">
+          <span style="background:linear-gradient(135deg,var(--brand),var(--brand2));color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:7pt;font-weight:800;flex-shrink:0;">2</span>
+          <div><strong>terraform plan -out=tfplan</strong> — preview changes, save plan artifact</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:7px 11px;background:var(--card);border:1px solid var(--border);border-radius:8px;font-size:8pt;">
+          <span style="background:linear-gradient(135deg,var(--brand),var(--brand2));color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:7pt;font-weight:800;flex-shrink:0;">3</span>
+          <div><strong>terraform apply tfplan</strong> — create AKS, PostgreSQL, ACR, Key Vault, VNet</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:7px 11px;background:var(--card);border:1px solid var(--border);border-radius:8px;font-size:8pt;">
+          <span style="background:linear-gradient(135deg,var(--brand),var(--brand2));color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:7pt;font-weight:800;flex-shrink:0;">4</span>
+          <div><strong>az aks get-credentials</strong> — connect kubectl, then push manifests via ArgoCD</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-num">6 / 11</div>
+  <div class="slide-brand"><span>ZingyBank</span></div>
+</div>
+
+<!-- =====================================================
+     SLIDE 7 — CI/CD PIPELINE
+===================================================== -->
+<div class="slide">
+  <div class="blob" style="width:100mm;height:100mm;background:rgba(190,18,60,0.07);top:-15mm;right:-10mm;"></div>
+
+  <div class="slide-header">
+    <div class="label">DevOps</div>
+    <h2 class="grad-text-2">CI/CD Pipeline — GitHub Actions</h2>
+    <div class="divider"></div>
+  </div>
+
+  <!-- Trigger banner -->
+  <div style="display:flex;align-items:center;gap:10px;padding:9px 14px;background:rgba(225,29,72,0.07);border:1px solid var(--border);border-radius:8px;margin-bottom:11px;font-size:8.5pt;">
+    <span style="font-size:16px;">🔔</span>
+    <span><strong>Triggers:</strong> Push to <code style="color:var(--accent);">dev</code> → builds &amp; deploys to Azure dev AKS automatically. Push to <code style="color:var(--accent);">main</code> → staging deploy, then manual-gated production deploy. All use <code style="color:var(--accent);">GITHUB_TOKEN</code> + ArgoCD GitOps.</span>
+  </div>
+
+  <!-- Pipeline stages -->
+  <div class="pipeline" style="flex:1;align-items:stretch;">
+
+    <!-- Stage 1: CI -->
+    <div class="pipe-stage">
+      <h4 style="color:var(--info);">① CI — Build &amp; Test</h4>
+      <div style="font-size:7.5pt;color:var(--muted);margin-bottom:9px;">Parallel matrix (11 services + frontend)</div>
+
+      <div style="font-size:8pt;font-weight:700;margin-bottom:5px;color:var(--brand2);">Java Services (×11)</div>
+      <div class="pipe-step"><div class="pipe-dot" style="background:var(--info);"></div><div>Setup JDK 21 + Maven cache</div></div>
+      <div class="pipe-step"><div class="pipe-dot" style="background:var(--info);"></div><div><strong>mvn clean verify</strong> — build + unit tests</div></div>
+      <div class="pipe-step"><div class="pipe-dot" style="background:var(--info);"></div><div>Trivy filesystem scan — CRITICAL/HIGH CVEs</div></div>
+      <div class="pipe-step"><div class="pipe-dot" style="background:var(--info);"></div><div>Upload SARIF to GitHub Security tab</div></div>
+
+      <div style="font-size:8pt;font-weight:700;margin:9px 0 5px;color:var(--brand2);">Frontend</div>
+      <div class="pipe-step"><div class="pipe-dot" style="background:var(--info);"></div><div><strong>npm ci</strong> → <strong>tsc --noEmit</strong> → <strong>npm run build</strong></div></div>
+      <div class="pipe-step"><div class="pipe-dot" style="background:var(--info);"></div><div>Upload <code style="color:var(--accent);">dist/</code> artifact for reuse</div></div>
+    </div>
+
+    <div class="pipe-arrow">→</div>
+
+    <!-- Stage 2: Docker -->
+    <div class="pipe-stage">
+      <h4 style="color:var(--accent);">② Docker — Push Images</h4>
+      <div style="font-size:7.5pt;color:var(--muted);margin-bottom:9px;">Parallel matrix · runs on main / dev</div>
+
+      <div class="pipe-step"><div class="pipe-dot" style="background:var(--accent);"></div><div>Docker Buildx + GHA layer cache</div></div>
+      <div class="pipe-step"><div class="pipe-dot" style="background:var(--accent);"></div><div>Push to <strong>GHCR</strong> (always — no secrets needed)</div></div>
+      <div class="pipe-step"><div class="pipe-dot" style="background:var(--accent);"></div><div>Push to <strong>Azure ACR</strong> (optional secret)</div></div>
+      <div class="pipe-step"><div class="pipe-dot" style="background:var(--accent);"></div><div>Push to <strong>AWS ECR</strong> / <strong>GCP AR</strong> (optional)</div></div>
+      <div class="pipe-step"><div class="pipe-dot" style="background:var(--accent);"></div><div>Tags: <code style="color:var(--accent);">{branch}-{sha}</code> + <code style="color:var(--accent);">{branch}-latest</code></div></div>
+
+      <div style="font-size:8pt;font-weight:700;margin:9px 0 5px;color:var(--brand2);">Dev Deploy (dev branch)</div>
+      <div class="pipe-step"><div class="pipe-dot" style="background:#f97316;"></div><div>Azure login → push 12 images to dev ACR</div></div>
+      <div class="pipe-step"><div class="pipe-dot" style="background:#f97316;"></div><div><strong>kubectl rollout restart</strong> — all dev pods</div></div>
+      <div class="pipe-step"><div class="pipe-dot" style="background:#f97316;"></div><div>Smoke test: <code style="color:var(--accent);">POST /api/v1/auth/register</code></div></div>
+    </div>
+
+    <div class="pipe-arrow">→</div>
+
+    <!-- Stage 3: Staging → Production -->
+    <div class="pipe-stage">
+      <h4 style="color:var(--success);">③ CD — Staging → Production</h4>
+      <div style="font-size:7.5pt;color:var(--muted);margin-bottom:9px;">main branch only · ArgoCD GitOps</div>
+
+      <div style="font-size:8pt;font-weight:700;margin-bottom:5px;color:var(--brand2);">Staging (auto)</div>
+      <div class="pipe-step"><div class="pipe-dot" style="background:var(--success);"></div><div>Patch <code style="color:var(--accent);">helm/values/staging/*.yaml</code> with new SHA tag</div></div>
+      <div class="pipe-step"><div class="pipe-dot" style="background:var(--success);"></div><div>CD bot commits back → ArgoCD detects &amp; syncs</div></div>
+      <div class="pipe-step"><div class="pipe-dot" style="background:var(--success);"></div><div>Rolling deploy · readiness probes guard cutover</div></div>
+
+      <div style="font-size:8pt;font-weight:700;margin:9px 0 5px;color:var(--brand2);">Production (manual gate)</div>
+      <div class="pipe-step"><div class="pipe-dot" style="background:var(--success);"></div><div>Team lead approves in GitHub Environments</div></div>
+      <div class="pipe-step"><div class="pipe-dot" style="background:var(--success);"></div><div>Patch <code style="color:var(--accent);">helm/values/prod/*.yaml</code> → ArgoCD syncs</div></div>
+      <div class="pipe-step"><div class="pipe-dot" style="background:var(--success);"></div><div>GitHub Release created automatically (v1.0.N)</div></div>
+    </div>
+
+  </div>
+
+  <div style="margin-top:9px;font-size:7.5pt;color:var(--muted);padding:7px 12px;background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-radius:6px;">
+    ✔ &nbsp; Zero-downtime rolling updates — old pods terminate only after new pods pass readiness probes. &nbsp;|&nbsp; Dev auto-deploys on every <code style="color:var(--accent);">dev</code> push. &nbsp;|&nbsp; Images cached in GHCR with no secrets required.
+  </div>
+
+  <div class="slide-num">7 / 11</div>
+  <div class="slide-brand"><span>ZingyBank</span></div>
+</div>
+
+<!-- =====================================================
+     SLIDE 8 — KUBERNETES & ARGOCD
+===================================================== -->
+<div class="slide">
+  <div class="blob" style="width:100mm;height:100mm;background:rgba(59,130,246,0.06);bottom:-20mm;left:-10mm;"></div>
+
+  <div class="slide-header">
+    <div class="label">Orchestration &amp; GitOps</div>
+    <h2 class="grad-text-2">Kubernetes &amp; ArgoCD</h2>
+    <div class="divider"></div>
+  </div>
+
+  <div class="grid-2" style="gap:14px;flex:1;">
+
+    <!-- K8s Objects -->
+    <div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px;">
+        <span style="font-size:18px;">▸</span>
+        <span style="font-size:9.5pt;font-weight:800;">Kubernetes Object Inventory</span>
+      </div>
+      <div class="k8s-item">
+        <div class="ki-icon">📁</div>
+        <div><div class="ki-name">Namespaces: zingybank, monitoring, argocd</div><div class="ki-desc">Service isolation. Monitoring runs Prometheus + Grafana. ArgoCD manages all GitOps delivery.</div></div>
+      </div>
+      <div class="k8s-item">
+        <div class="ki-icon">🚀</div>
+        <div><div class="ki-name">12 Deployments · 2 replicas each (default)</div><div class="ki-desc">11 microservices + 1 frontend. Liveness/readiness probes on /actuator/health every 30s.</div></div>
+      </div>
+      <div class="k8s-item">
+        <div class="ki-icon">🔗</div>
+        <div><div class="ki-name">ClusterIP Services + 1 LoadBalancer</div><div class="ki-desc">All services are ClusterIP (private DNS). Only NGINX Ingress gets the public Azure LoadBalancer IP.</div></div>
+      </div>
+      <div class="k8s-item">
+        <div class="ki-icon">📈</div>
+        <div><div class="ki-name">HPA on every service</div><div class="ki-desc">Min 2 replicas, max 10. Scale trigger: CPU ≥ 70%. Scale-down stabilisation: 5 minutes to prevent thrashing.</div></div>
+      </div>
+      <div class="k8s-item">
+        <div class="ki-icon">🛡</div>
+        <div><div class="ki-name">NetworkPolicies — default-deny-all</div><div class="ki-desc">PCI DSS compliance. Only explicitly allowed pod-to-pod traffic passes. API Gateway → services · Prometheus → all pods.</div></div>
+      </div>
+      <div class="k8s-item">
+        <div class="ki-icon">⚙</div>
+        <div><div class="ki-name">Kubernetes Jobs (seed + admin)</div><div class="ki-desc">seed-test-data.yml seeds 4 test accounts. grant-admin-access.yml promotes user to ADMIN. Both use init containers to wait for auth-service readiness.</div></div>
+      </div>
+    </div>
+
+    <!-- ArgoCD GitOps -->
+    <div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:9px;">
+        <span style="font-size:18px;">🔄</span>
+        <span style="font-size:9.5pt;font-weight:800;">ArgoCD — GitOps Delivery</span>
+      </div>
+
+      <div style="font-size:8pt;color:var(--muted);margin-bottom:10px;line-height:1.6;">
+        ArgoCD watches the Git repository for changes to
+        <code style="color:var(--accent);">infrastructure/kubernetes/</code> and automatically
+        syncs the cluster state. Manual or automated sync per application.
+      </div>
+
+      <div style="font-size:8pt;font-weight:700;color:var(--brand2);margin-bottom:7px;">Sync Wave Order (dependency management)</div>
+      <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:10px;padding:7px 11px;background:var(--card);border:1px solid var(--border);border-radius:7px;font-size:8pt;">
+          <span style="background:linear-gradient(135deg,var(--brand),var(--brand2));color:white;border-radius:5px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:7.5pt;font-weight:800;flex-shrink:0;">1</span>
+          <div><strong>Wave 1</strong> — API Gateway + Frontend (ingress + public routing first)</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:7px 11px;background:var(--card);border:1px solid var(--border);border-radius:7px;font-size:8pt;">
+          <span style="background:linear-gradient(135deg,var(--brand),var(--brand2));color:white;border-radius:5px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:7.5pt;font-weight:800;flex-shrink:0;">2</span>
+          <div><strong>Wave 2</strong> — Auth Service (all other services depend on JWT validation)</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:7px 11px;background:var(--card);border:1px solid var(--border);border-radius:7px;font-size:8pt;">
+          <span style="background:linear-gradient(135deg,var(--brand),var(--brand2));color:white;border-radius:5px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:7.5pt;font-weight:800;flex-shrink:0;">3</span>
+          <div><strong>Wave 3</strong> — Account, Transaction, Payment, Loan, Card, KYC</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:7px 11px;background:var(--card);border:1px solid var(--border);border-radius:7px;font-size:8pt;">
+          <span style="background:linear-gradient(135deg,var(--brand),var(--brand2));color:white;border-radius:5px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:7.5pt;font-weight:800;flex-shrink:0;">4</span>
+          <div><strong>Wave 4</strong> — Notification, Statement, Audit (consumers of events)</div>
+        </div>
+      </div>
+
+      <div class="code-block" style="font-size:7.5pt;">
+<span class="c-comment"># zingybank-app.yml — ArgoCD Application</span>
+<span class="c-keyword">metadata</span>:
+  annotations:
+    argocd.argoproj.io/sync-wave: <span class="c-string">"1"</span>
+<span class="c-keyword">spec</span>:
+  source:
+    repoURL: https://github.com/LycanTech/ZingyBank
+    path: infrastructure/kubernetes/api-gateway
+  destination:
+    namespace: <span class="c-string">zingybank</span>
+  syncPolicy:
+    automated:
+      prune: <span class="c-var">true</span>
+      selfHeal: <span class="c-var">true</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-num">8 / 11</div>
+  <div class="slide-brand"><span>ZingyBank</span></div>
+</div>
+
+<!-- =====================================================
+     SLIDE 9 — SECURITY & OBSERVABILITY
+===================================================== -->
+<div class="slide">
+  <div class="blob" style="width:110mm;height:110mm;background:rgba(225,29,72,0.07);top:-20mm;right:-10mm;"></div>
+
+  <div class="slide-header">
+    <div class="label">Security &amp; Monitoring</div>
+    <h2 class="grad-text-2">Security &amp; Observability</h2>
+    <div class="divider"></div>
+  </div>
+
+  <div class="grid-2" style="gap:14px;flex:1;">
+
+    <!-- Security -->
+    <div>
+      <div style="font-size:8.5pt;font-weight:700;color:var(--brand2);text-transform:uppercase;letter-spacing:1px;margin-bottom:9px;">🔐 Security Model</div>
+
+      <div class="k8s-item">
+        <div class="ki-icon">🪪</div>
+        <div>
+          <div class="ki-name">Role-Based Access Control (5 roles)</div>
+          <div class="ki-desc">CUSTOMER · TELLER · MANAGER · ADMIN · COMPLIANCE_OFFICER. JWT carries roles. Spring Security method-level <code style="color:var(--accent);">@PreAuthorize</code> on every sensitive endpoint.</div>
+        </div>
+      </div>
+      <div class="k8s-item">
+        <div class="ki-icon">🔑</div>
+        <div>
+          <div class="ki-name">BCrypt Password Hashing (strength 12)</div>
+          <div class="ki-desc">Passwords stored as BCrypt hashes in <code style="color:var(--accent);">password_hash</code> column. Never stored or logged in plaintext.</div>
+        </div>
+      </div>
+      <div class="k8s-item">
+        <div class="ki-icon">🛡</div>
+        <div>
+          <div class="ki-name">PCI DSS Network Policies</div>
+          <div class="ki-desc">Default-deny-all. Explicit allow rules per allowed path: Gateway → services, Prometheus → all pods, DNS egress only. Inbound from NGINX Ingress only.</div>
+        </div>
+      </div>
+      <div class="k8s-item">
+        <div class="ki-icon">🔒</div>
+        <div>
+          <div class="ki-name">TLS Everywhere</div>
+          <div class="ki-desc">PostgreSQL <code style="color:var(--accent);">require_secure_transport=on</code>. NGINX Ingress TLS termination. Azure Key Vault for all secrets — no secrets in environment files.</div>
+        </div>
+      </div>
+      <div class="k8s-item">
+        <div class="ki-icon">📋</div>
+        <div>
+          <div class="ki-name">Immutable Audit Trail</div>
+          <div class="ki-desc">Audit Service captures every privileged action. Append-only write pattern. Required for SOC 2 / banking compliance.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Observability -->
+    <div>
+      <div style="font-size:8.5pt;font-weight:700;color:var(--brand2);text-transform:uppercase;letter-spacing:1px;margin-bottom:9px;">📡 Observability Stack</div>
+
+      <div class="k8s-item">
+        <div class="ki-icon">📊</div>
+        <div>
+          <div class="ki-name">Prometheus — Metrics <span style="font-size:7pt;background:rgba(34,197,94,0.15);color:#22c55e;padding:1px 6px;border-radius:4px;margin-left:4px;">LIVE</span></div>
+          <div class="ki-desc">Scrapes <code style="color:var(--accent);">/actuator/prometheus</code> on all 11 pods every 15s. Deployed in AKS — accessible at <code style="color:var(--accent);">http://72.153.114.15/prometheus</code>.</div>
+        </div>
+      </div>
+      <div class="k8s-item">
+        <div class="ki-icon">📈</div>
+        <div>
+          <div class="ki-name">Grafana — Dashboards <span style="font-size:7pt;background:rgba(34,197,94,0.15);color:#22c55e;padding:1px 6px;border-radius:4px;margin-left:4px;">LIVE</span></div>
+          <div class="ki-desc">Pre-built <strong>ZingyBank Service Overview</strong> dashboard: HTTP rate/errors/latency, JVM heap, P95/P99. Live at <code style="color:var(--accent);">http://72.153.114.15/grafana</code> · login: <code style="color:var(--accent);">admin / ZingyGrafana@2026</code>.</div>
+        </div>
+      </div>
+      <div class="k8s-item">
+        <div class="ki-icon">🔭</div>
+        <div>
+          <div class="ki-name">Jaeger — Distributed Tracing</div>
+          <div class="ki-desc">OpenTelemetry SDK on all services + browser frontend. Traces flow: browser → API Gateway → downstream services → DB. Local: <code style="color:var(--accent);">localhost:16686</code> (docker-compose).</div>
+        </div>
+      </div>
+      <div class="k8s-item">
+        <div class="ki-icon">📝</div>
+        <div>
+          <div class="ki-name">Loki + Promtail — Log Aggregation</div>
+          <div class="ki-desc">Promtail ships structured JSON logs from all pods to Loki. Query in Grafana Explore. Correlate trace IDs in logs with Jaeger spans. Local docker-compose setup.</div>
+        </div>
+      </div>
+      <div class="k8s-item">
+        <div class="ki-icon">🌐</div>
+        <div>
+          <div class="ki-name">OpenTelemetry Browser SDK</div>
+          <div class="ki-desc">Frontend sends spans via <code style="color:var(--accent);">resourceFromAttributes()</code> (SDK 2.x API). End-to-end traces from browser click through all backend services.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-num">9 / 11</div>
+  <div class="slide-brand"><span>ZingyBank</span></div>
+</div>
+
+<!-- =====================================================
+     SLIDE 10 — API REFERENCE
+===================================================== -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="label">API Reference</div>
+    <h2 class="grad-text-2">REST API Endpoints</h2>
+    <div class="divider"></div>
+  </div>
+
+  <div style="font-size:7.5pt;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+    <span>All requests go through the API Gateway at <code style="color:var(--accent);">http://localhost:8080</code> (local) or the AKS Ingress IP (cloud). Base path: <code style="color:var(--accent);">/api</code></span>
+    <span style="color:var(--accent);font-weight:700;white-space:nowrap;">🔒 = JWT required</span>
+  </div>
+
+  <div class="grid-2" style="gap:12px;flex:1;">
+
+    <!-- Left column -->
+    <div>
+      <div style="font-size:8pt;font-weight:700;color:var(--brand2);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">🔐 Auth Service</div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">
+        <table>
+          <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="path">/auth/register</td><td>Create account + trigger KYC</td></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="path">/auth/login</td><td>Login → returns JWT token</td></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="path">/auth/me</td><td>🔒 Current user profile + roles</td></tr>
+          <tr><td><span class="method method-put">PUT</span></td><td class="path">/auth/password</td><td>🔒 Change password (BCrypt)</td></tr>
+        </table>
+      </div>
+
+      <div style="font-size:8pt;font-weight:700;color:var(--brand2);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">🏦 Account Service</div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">
+        <table>
+          <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="path">/accounts</td><td>🔒 Open a new account</td></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="path">/accounts/user/:id</td><td>🔒 List accounts for user</td></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="path">/accounts/:id</td><td>🔒 Get account details + balance</td></tr>
+          <tr><td><span class="method method-patch">PATCH</span></td><td class="path">/accounts/:id/status</td><td>🔒 Freeze / close account</td></tr>
+        </table>
+      </div>
+
+      <div style="font-size:8pt;font-weight:700;color:var(--brand2);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">↔️ Transaction Service</div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <table>
+          <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="path">/transactions/deposit</td><td>🔒 Deposit funds</td></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="path">/transactions/withdraw</td><td>🔒 Withdraw funds</td></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="path">/transactions/transfer</td><td>🔒 Internal transfer</td></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="path">/transactions/:accountNo</td><td>🔒 Transaction history (paged)</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Right column -->
+    <div>
+      <div style="font-size:8pt;font-weight:700;color:var(--brand2);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">🏛 Loan Service</div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">
+        <table>
+          <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="path">/loans/apply</td><td>🔒 Submit loan application</td></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="path">/loans/user/:id</td><td>🔒 Get user's loans</td></tr>
+          <tr><td><span class="method method-patch">PATCH</span></td><td class="path">/loans/:id/approve</td><td>🔒 Approve (MANAGER+)</td></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="path">/loans/:id/repay</td><td>🔒 Make EMI repayment</td></tr>
+        </table>
+      </div>
+
+      <div style="font-size:8pt;font-weight:700;color:var(--brand2);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">💳 Card &amp; 💸 Payment Services</div>
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">
+        <table>
+          <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="path">/cards/issue</td><td>🔒 Issue virtual / physical card</td></tr>
+          <tr><td><span class="method method-patch">PATCH</span></td><td class="path">/cards/:id/freeze</td><td>🔒 Freeze / unfreeze card</td></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="path">/payments/bill</td><td>🔒 Pay a bill</td></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="path">/payments/wire</td><td>🔒 External wire transfer</td></tr>
+        </table>
+      </div>
+
+      <!-- Quick start code block -->
+      <div style="font-size:8pt;font-weight:700;color:var(--brand2);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">Quick Start — Login &amp; Transfer</div>
+      <div class="code-block" style="font-size:7pt;">
+<span class="c-comment"># 1. Login and capture token</span>
+TOKEN=$(curl -s -X POST localhost:8080/api/auth/login \
+  -H <span class="c-string">"Content-Type: application/json"</span> \
+  -d <span class="c-string">'{"email":"admin@zingybank.test","password":"TestAdmin123!"}'</span> \
+  | python -c <span class="c-string">"import sys,json;print(json.load(sys.stdin)['token'])"</span>)
+
+<span class="c-comment"># 2. Transfer funds</span>
+curl -X POST localhost:8080/api/transactions/transfer \
+  -H <span class="c-string">"Authorization: Bearer $TOKEN"</span> \
+  -H <span class="c-string">"Content-Type: application/json"</span> \
+  -d <span class="c-string">'{"fromAccountId":1,"toAccountId":2,"amount":500.00}'</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-num">10 / 11</div>
+  <div class="slide-brand"><span>ZingyBank</span></div>
+</div>
+
+<!-- =====================================================
+     SLIDE 11 — CLOSING SUMMARY
+===================================================== -->
+<div class="slide closing">
+  <div class="blob" style="width:180mm;height:180mm;background:rgba(225,29,72,0.1);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+
+  <div style="font-size:40px;margin-bottom:8px;">🏦</div>
+
+  <div class="label" style="margin-bottom:10px;">Summary</div>
+
+  <h2 class="grad-text">ZingyBank</h2>
+
+  <p>
+    A complete, production-grade retail banking platform — from a dark-theme React SPA
+    to 11 microservices deployed on Azure Kubernetes Service via a fully automated CI/CD pipeline.
+  </p>
+
+  <div class="closing-grid">
+    <div class="closing-item">
+      <div class="ci-icon">🏦</div>
+      <h5>Full Banking Suite</h5>
+      <p>11 microservices covering accounts, transactions, payments, loans, cards, KYC, notifications, statements, and audit.</p>
+    </div>
+    <div class="closing-item">
+      <div class="ci-icon">🔐</div>
+      <h5>Enterprise Security</h5>
+      <p>JWT + BCrypt, 5 RBAC roles, PCI DSS network policies, TLS everywhere, Key Vault secrets, immutable audit log.</p>
+    </div>
+    <div class="closing-item">
+      <div class="ci-icon">▸</div>
+      <h5>Kubernetes Orchestration</h5>
+      <p>AKS with ArgoCD GitOps, sync waves, HPA auto-scaling, rolling deploys, and liveness/readiness probes.</p>
+    </div>
+    <div class="closing-item">
+      <div class="ci-icon">📊</div>
+      <h5>Full Observability</h5>
+      <p>Prometheus metrics, Grafana dashboards, Jaeger distributed traces, Loki logs, and OpenTelemetry browser spans.</p>
+    </div>
+    <div class="closing-item">
+      <div class="ci-icon">🔄</div>
+      <h5>GitHub Actions CI/CD</h5>
+      <p>Push → TypeScript check → Docker build → auto staging deploy → manual approval → zero-downtime production deploy.</p>
+    </div>
+    <div class="closing-item">
+      <div class="ci-icon">🌍</div>
+      <h5>Infrastructure as Code</h5>
+      <p>Terraform modules for AKS, PostgreSQL, ACR, Key Vault, VNet. Remote state in Azure Blob. Cloud-agnostic design.</p>
+    </div>
+  </div>
+
+  <!-- Live links -->
+  <div style="margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+    <a href="http://72.153.114.15" style="text-decoration:none;font-size:8pt;padding:6px 14px;background:rgba(225,29,72,0.1);border:1px solid var(--border);border-radius:20px;color:var(--accent);">🌐 http://72.153.114.15</a>
+    <a href="http://72.153.114.15/grafana" style="text-decoration:none;font-size:8pt;padding:6px 14px;background:rgba(225,29,72,0.1);border:1px solid var(--border);border-radius:20px;color:var(--accent);">📈 /grafana</a>
+    <a href="http://72.153.114.15/prometheus" style="text-decoration:none;font-size:8pt;padding:6px 14px;background:rgba(225,29,72,0.1);border:1px solid var(--border);border-radius:20px;color:var(--accent);">📊 /prometheus</a>
+    <span style="font-size:8pt;padding:6px 14px;background:rgba(225,29,72,0.1);border:1px solid var(--border);border-radius:20px;color:var(--muted);">GitHub: <span style="color:var(--brand2);">LycanTech/ZingyBank</span></span>
+  </div>
+
+  <div class="slide-num">11 / 11</div>
+  <div class="slide-brand"><span>ZingyBank</span></div>
+</div>
+
+</div><!-- end slides-wrap -->
+</body>
+</html>

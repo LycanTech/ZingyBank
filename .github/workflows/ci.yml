@@ -2,9 +2,9 @@ name: ZingyBank CI Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, dev]
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, dev]
 
 env:
   JAVA_VERSION: '21'
@@ -12,6 +12,8 @@ env:
   REGISTRY_GHCR: ghcr.io
   # Optional registries — only used when the corresponding secrets are configured
   REGISTRY_ACR: zingybank.azurecr.io
+  # Dev environment ACR — used on dev branch when AZURE_CREDENTIALS is configured
+  REGISTRY_ACR_DEV: zingybankdev.azurecr.io
 
 permissions:
   contents: read
@@ -415,3 +417,98 @@ jobs:
             ${{ env.REGISTRY_ACR }}/zingybank/frontend:${{ steps.meta.outputs.branch }}-latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  # ============================================================
+  # Stage 5: Deploy to Dev AKS (dev branch only)
+  #
+  # Requires GitHub secret: AZURE_CREDENTIALS (service principal JSON)
+  # with AcrPush on zingybankdev ACR + AKS admin on zingybank-aks-dev.
+  # Skipped gracefully if the secret is not configured.
+  # ============================================================
+  deploy-dev:
+    name: Deploy to Dev AKS
+    runs-on: ubuntu-latest
+    needs: [docker-build-push, frontend-docker-push]
+    if: github.ref == 'refs/heads/dev'
+    env:
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+
+    steps:
+      - name: Check Azure credentials
+        id: az-check
+        run: |
+          if [ -n "$AZURE_CREDENTIALS" ]; then
+            echo "enabled=true" >> $GITHUB_OUTPUT
+          else
+            echo "enabled=false" >> $GITHUB_OUTPUT
+            echo "AZURE_CREDENTIALS not configured — skipping dev AKS deploy"
+          fi
+
+      - name: Azure login
+        if: steps.az-check.outputs.enabled == 'true'
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Login to Dev ACR
+        if: steps.az-check.outputs.enabled == 'true'
+        run: az acr login --name zingybankdev
+
+      - name: Checkout code
+        if: steps.az-check.outputs.enabled == 'true'
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        if: steps.az-check.outputs.enabled == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push all services to Dev ACR
+        if: steps.az-check.outputs.enabled == 'true'
+        run: |
+          for svc in api-gateway auth-service account-service transaction-service \
+                     payment-service loan-service card-service kyc-service \
+                     notification-service statement-service audit-service; do
+            echo "Building $svc..."
+            docker build \
+              --file services/$svc/Dockerfile \
+              --tag ${{ env.REGISTRY_ACR_DEV }}/zingybank/$svc:dev-latest \
+              --push \
+              .
+          done
+
+      - name: Build and push frontend to Dev ACR
+        if: steps.az-check.outputs.enabled == 'true'
+        run: |
+          docker build \
+            --file frontend/Dockerfile \
+            --tag ${{ env.REGISTRY_ACR_DEV }}/zingybank/frontend:dev-latest \
+            --push \
+            frontend/
+
+      - name: Get AKS dev credentials
+        if: steps.az-check.outputs.enabled == 'true'
+        run: |
+          az aks get-credentials \
+            --resource-group zingybank-dev-rg \
+            --name zingybank-aks-dev \
+            --overwrite-existing
+
+      - name: Rolling restart all dev deployments
+        if: steps.az-check.outputs.enabled == 'true'
+        run: |
+          kubectl rollout restart deployment -n zingybank-dev
+          kubectl rollout status deployment -n zingybank-dev --timeout=300s
+
+      - name: Smoke test — registration endpoint
+        if: steps.az-check.outputs.enabled == 'true'
+        run: |
+          INGRESS_IP=$(kubectl get svc ingress-nginx-controller -n ingress-nginx \
+            -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          echo "Ingress IP: $INGRESS_IP"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 15 \
+            -X POST http://$INGRESS_IP/api/v1/auth/register \
+            -H "Content-Type: application/json" \
+            -d '{"firstName":"CI","lastName":"Bot","email":"cibot@zingybank.com","password":"CI@Bot2026!","phoneNumber":"+2340000000001"}')
+          echo "Registration status: $STATUS"
+          # 200 = success, 409 = already registered (both acceptable in CI)
+          [[ "$STATUS" == "200" || "$STATUS" == "409" ]] && echo "Smoke test passed" || exit 1
