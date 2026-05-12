@@ -17,6 +17,9 @@ env:
   OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
   OTEL_SERVICE_NAME: api-gateway
   KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  SPRING_DATA_REDIS_HOST: redis
+  SPRING_DATA_REDIS_PORT: "6379"
+  MANAGEMENT_HEALTH_REDIS_ENABLED: "false"
 podSecurityContext:
   runAsNonRoot: false
   runAsUser: 0
