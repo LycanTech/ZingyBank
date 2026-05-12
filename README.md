@@ -40,7 +40,7 @@ A production-grade retail banking platform built with **Java 21 + Spring Boot 3.
 ### Dev Environment — Live on Azure (AKS)
 
 > **Ingress IP:** `72.153.114.15` — Azure Kubernetes Service, `zingybank-dev` namespace  
-> All 11 Spring Boot microservices + React frontend deployed and running.
+> All 11 Spring Boot microservices + React frontend deployed and running. Latest release: **v1.0.26**
 
 | App | Live URL | Notes |
 |-----|----------|-------|
@@ -51,11 +51,20 @@ A production-grade retail banking platform built with **Java 21 + Spring Boot 3.
 | **Prometheus** | http://72.153.114.15/prometheus | Scrapes all 11 service `/actuator/prometheus` |
 | **ArgoCD** | `kubectl port-forward svc/argocd-server -n argocd 8080:443` | GitOps sync — tracks `dev` branch |
 
+> **Admin login (dev):** Email: `cheekway18@gmail.com` · Password: `ZingyAdmin@2026!` · Roles: `ADMIN`, `CUSTOMER`
+
 > **Register a test user:**
 > ```bash
 > curl -X POST http://72.153.114.15/api/v1/auth/register \
 >   -H "Content-Type: application/json" \
->   -d '{"firstName":"Test","lastName":"User","email":"you@example.com","password":"Test@Pass123","phoneNumber":"+2348012345678"}'
+>   -d '{"firstName":"Test","lastName":"User","email":"you@example.com","password":"Test@Pass123!","phoneNumber":"+2348012345679"}'
+> ```
+
+> **Login and get a token:**
+> ```bash
+> curl -s -X POST http://72.153.114.15/api/v1/auth/login \
+>   -H "Content-Type: application/json" \
+>   -d '{"email":"you@example.com","password":"Test@Pass123!"}' | python -c "import sys,json; print(json.load(sys.stdin)['accessToken'])"
 > ```
 
 > **Get ArgoCD admin password:**
@@ -139,6 +148,20 @@ A production-grade retail banking platform built with **Java 21 + Spring Boot 3.
 | **statement-service** | 8089 | Account statements, PDF generation |
 | **audit-service** | 8090 | Immutable audit log with SHA-256 hash chain (tamper detection) |
 
+### Service Discovery (Kubernetes)
+
+In the AKS `zingybank-dev` namespace, the API Gateway routes using bare service names (e.g. `http://auth-service:8081`). Kubernetes `ExternalName` services act as DNS aliases mapping these to the Helm-prefixed ClusterIP services:
+
+| Gateway routes to | Resolves via ExternalName to |
+| --- | --- |
+| `http://auth-service:8081` | `zingybank-dev-auth-service.zingybank-dev.svc.cluster.local` |
+| `http://account-service:8082` | `zingybank-dev-account-service.zingybank-dev.svc.cluster.local` |
+| *(same pattern for all 11 services)* | |
+
+JWT tokens are validated **independently by each downstream service** — the gateway forwards the `Authorization: Bearer` header unchanged. There is no Eureka/Consul service registry; Kubernetes DNS handles all discovery.
+
+> **Kafka note:** Apache Kafka is in the codebase (transaction events, audit/notification consumers) but is **not deployed** in the dev cluster. The `notification-service` and `audit-service` have `SPRING_KAFKA_CONSUMER_AUTO_STARTUP: "false"` set so they start cleanly without a broker. All synchronous flows (auth, accounts, transactions, loans, cards) work fully.
+
 ### Data Layer
 
 - **PostgreSQL 16** — per-service databases (database-per-service pattern)
@@ -176,15 +199,15 @@ A production-grade retail banking platform built with **Java 21 + Spring Boot 3.
 
 | Tool | Purpose | Status |
 |------|---------|--------|
-| **Git / GitHub** | Source control, branch protection, PR reviews | ✅ Implemented |
-| **Azure DevOps** | Enterprise CI/CD — 6-stage pipeline with approval gates | ✅ Implemented |
-| **Docker** | Containerize all services — multi-stage Maven builds | ✅ Implemented |
-| **Kubernetes** | Orchestration — AKS, EKS, or any conformant cluster | ✅ Implemented |
-| **Terraform** | Infrastructure as Code — Azure + AWS modules | ✅ Implemented |
-| **Helm** | K8s package management — base chart + per-env overrides | ✅ Implemented |
-| **GitHub Actions** | Cloud-agnostic CI/CD — GHCR primary, ACR/ECR/GCP optional | ✅ Implemented |
-| **ArgoCD** | GitOps delivery — auto-sync with ordered sync-waves | ✅ Implemented |
-| **Prometheus + Grafana** | Monitoring, alerting, 5 pre-built dashboards | ✅ Implemented |
+| **Git / GitHub** | Source control, branch protection, PR reviews | ✅ Active |
+| **GitHub Actions** | Primary CI/CD — matrix builds, ACR push, staging→prod pipeline | ✅ Active |
+| **Azure DevOps** | Enterprise CI/CD — 6-stage pipeline with approval gates | ✅ Configured |
+| **Docker** | Containerize all services — multi-stage Maven builds | ✅ Active |
+| **Kubernetes** | Orchestration — AKS, EKS, or any conformant cluster | ✅ Active |
+| **Terraform** | Infrastructure as Code — Azure + AWS modules | ✅ Active |
+| **Helm** | K8s package management — base chart + per-env overrides | ✅ Active |
+| **ArgoCD** | GitOps delivery — auto-sync with ordered sync-waves | ✅ Active |
+| **Prometheus + Grafana** | Monitoring — ZingyBank Overview dashboard live in AKS | ✅ Active |
 | **Jaeger** | Distributed tracing (OpenTelemetry OTLP) | ✅ Implemented |
 | **Loki + Promtail** | Log aggregation and querying | ✅ Implemented |
 | **HashiCorp Vault** | Secrets management — dev mode locally, ESO in K8s | ✅ Implemented |
@@ -510,11 +533,11 @@ ZingyBank/
 
 ## CI/CD Pipeline
 
-ZingyBank uses **two parallel pipelines**: Azure DevOps (enterprise, primary) and GitHub Actions (cloud-agnostic, secondary).
+ZingyBank uses **two pipelines**: GitHub Actions (primary, fully implemented) and Azure DevOps (enterprise, configured).
 
 ---
 
-### Azure DevOps Pipeline (Enterprise — Primary)
+### Azure DevOps Pipeline (Enterprise — Configured)
 
 **File:** [`azure-pipelines.yml`](azure-pipelines.yml)
 
@@ -607,7 +630,7 @@ Azure DevOps → Pipelines → Environments → zingybank-production
 
 ---
 
-### GitHub Actions Pipeline (Cloud-Agnostic — Secondary)
+### GitHub Actions Pipeline (Primary — Active)
 
 **Files:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) · [`.github/workflows/cd.yml`](.github/workflows/cd.yml)
 
@@ -653,6 +676,18 @@ main push ──▶ CI (build / test / scan / push to GHCR)
           ArgoCD detects image tag update in helm/values/prod/
           GitHub Release created automatically
 ```
+
+### Enabling the Production Approval Gate
+
+The `deploy-production` job uses the `production` GitHub Environment. By default it runs automatically. To require manual approval before production deploys:
+
+```text
+GitHub → Repository Settings → Environments → production
+  → Required reviewers → Add reviewer(s)
+  → Save protection rules
+```
+
+Once configured, the CD pipeline pauses after staging and sends a notification to the reviewer(s). The job waits up to 30 days for approval before timing out.
 
 ### ArgoCD Sync Waves (ordered startup)
 
@@ -865,12 +900,12 @@ curl -X POST http://localhost:8080/api/v1/loans/apply \
 
 ## Contributing
 
-1. Create a feature branch from `develop`: `git checkout -b feature/your-feature`
+1. Create a feature branch from `dev`: `git checkout -b feature/your-feature`
 2. Write code with tests
 3. Ensure `mvn clean verify` passes and `npm run build` succeeds in `frontend/`
-4. Open a PR to `develop`
+4. Open a PR to `dev` — CI runs automatically on the branch
 5. Requires: code review + all CI checks passing
-6. Merges to `main` trigger automatic staging deployment via ArgoCD
+6. Merges to `main` trigger automatic staging → production (gated) deployment via GitHub Actions + ArgoCD
 
 ---
 
